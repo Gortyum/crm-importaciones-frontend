@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, Truck, Package, FileText, ShoppingCart } from "lucide-react";
+import { LayoutDashboard, Users, Truck, Package, FileText, ShoppingCart, Ship, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -9,6 +9,8 @@ const NAV = [
   { to: "/productos", label: "Productos", icon: Package },
   { to: "/cotizaciones", label: "Cotizaciones", icon: FileText },
   { to: "/ordenes-compra", label: "Órdenes de Compra", icon: ShoppingCart },
+  { to: "/importaciones", label: "Importaciones", icon: Ship },
+  { to: "/configuracion", label: "Configuración", icon: Settings },
 ];
 
 export default function Sidebar() {

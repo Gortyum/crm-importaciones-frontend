@@ -30,6 +30,11 @@ export const api = {
     update: (id: number, data: any) => request<any>(`/proveedores/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     delete: (id: number) => request<void>(`/proveedores/${id}`, { method: "DELETE" }),
   },
+  proveedorCategorias: {
+    list: () => request<any[]>("/proveedor-categorias/"),
+    create: (data: any) => request<any>("/proveedor-categorias/", { method: "POST", body: JSON.stringify(data) }),
+    delete: (id: number) => request<void>(`/proveedor-categorias/${id}`, { method: "DELETE" }),
+  },
   productos: {
     list: () => request<any[]>("/productos/"),
     create: (data: any) => request<any>("/productos/", { method: "POST", body: JSON.stringify(data) }),
@@ -42,6 +47,20 @@ export const api = {
     create: (data: any) => request<any>("/cotizaciones/", { method: "POST", body: JSON.stringify(data) }),
     changeEstado: (id: number, estado: string) => request<any>(`/cotizaciones/${id}/estado`, { method: "PATCH", body: JSON.stringify({ estado }) }),
     pdfData: (id: number) => request<any>(`/cotizaciones/${id}/pdf-data`),
+    crearImportacion: (id: number) => request<any>(`/cotizaciones/${id}/crear-importacion`, { method: "POST" }),
+  },
+  importaciones: {
+    list: () => request<any[]>("/importaciones/"),
+    get: (id: number) => request<any>(`/importaciones/${id}`),
+    create: (data: any) => request<any>("/importaciones/", { method: "POST", body: JSON.stringify(data) }),
+    changeEstado: (id: number, estado: string) => request<any>(`/importaciones/${id}/estado`, { method: "PATCH", body: JSON.stringify({ estado }) }),
+    pasarACotizacion: (id: number, clienteId: number, contactoId?: number | null) =>
+      request<any>(`/importaciones/${id}/pasar-a-cotizacion`, { method: "POST", body: JSON.stringify({ cliente_id: clienteId, contacto_id: contactoId ?? null }) }),
+    delete: (id: number) => request<void>(`/importaciones/${id}`, { method: "DELETE" }),
+  },
+  config: {
+    get: () => request<any>("/config/"),
+    update: (data: any) => request<any>("/config/", { method: "PUT", body: JSON.stringify(data) }),
   },
   divisas: {
     cambio: () => request<{ monedas: Record<string, number> }>("/divisas/cambio"),

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, ChevronRight, ShoppingCart } from "lucide-react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { ArrowLeft, Download, ChevronRight, ShoppingCart, Ship, Link2 } from "lucide-react";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -114,6 +114,20 @@ export default function DetalleCotizacion() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={handlePDF}><Download size={14} className="mr-1" /> PDF Cotización</Button>
+          {!cot.importacion_id && (
+            <Button
+              variant="outline"
+              onClick={async () => {
+                if (!confirm("¿Crear una importación de costeo desde esta cotización?")) return;
+                try {
+                  const imp = await api.cotizaciones.crearImportacion(cot.id);
+                  navigate(`/importaciones/${imp.id}`);
+                } catch (e: any) { alert(e.message); }
+              }}
+            >
+              <Ship size={14} className="mr-1" /> Crear Importación
+            </Button>
+          )}
           {transiciones.map((e) => (
             <Button key={e} variant={e === "Cancelada" ? "destructive" : "default"} onClick={() => cambiarEstado(e)}>
               {e} <ChevronRight size={14} className="ml-1" />
@@ -121,6 +135,14 @@ export default function DetalleCotizacion() {
           ))}
         </div>
       </div>
+
+      {cot.importacion_correlativo && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3 text-sm">
+          <Link2 size={16} className="text-blue-600" />
+          <span>Vinculada a la importación:</span>
+          <Link to={`/importaciones/${cot.importacion_id}`} className="font-mono font-medium text-blue-700 hover:underline">{cot.importacion_correlativo}</Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-6">
         <div className="bg-card p-5 col-span-2">

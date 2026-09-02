@@ -9,6 +9,10 @@ import NuevaCotizacion from "./pages/NuevaCotizacion";
 import DetalleCotizacion from "./pages/DetalleCotizacion";
 import OrdenesCompraList from "./pages/OrdenesCompraList";
 import DetalleOrdenCompra from "./pages/DetalleOrdenCompra";
+import ImportacionesList from "./pages/ImportacionesList";
+import NuevaImportacion from "./pages/NuevaImportacion";
+import DetalleImportacion from "./pages/DetalleImportacion";
+import Configuracion from "./pages/Configuracion";
 
 export default function App() {
   return (
@@ -23,6 +27,10 @@ export default function App() {
         <Route path="/cotizaciones/:id" element={<DetalleCotizacion />} />
         <Route path="/ordenes-compra" element={<OrdenesCompraList />} />
         <Route path="/ordenes-compra/:id" element={<DetalleOrdenCompra />} />
+        <Route path="/importaciones" element={<ImportacionesList />} />
+        <Route path="/importaciones/nueva" element={<NuevaImportacion />} />
+        <Route path="/importaciones/:id" element={<DetalleImportacion />} />
+        <Route path="/configuracion" element={<Configuracion />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>
