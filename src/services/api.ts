@@ -2,12 +2,22 @@ const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : "/api";
 
+import { getToken, clearSession } from "@/lib/auth";
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string>),
+  };
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
+    headers,
   });
   if (!res.ok) {
+    if (res.status === 401) clearSession();
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || "Error de servidor");
   }
@@ -16,6 +26,15 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  auth: {
+    login: (username: string, password: string) =>
+      request<any>("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+    register: (username: string, password: string) =>
+      request<any>("/auth/register", { method: "POST", body: JSON.stringify({ username, password }) }),
+    me: () => request<any>("/auth/me"),
+    cambiarPassword: (password_actual: string, password_nueva: string) =>
+      request<any>("/auth/cambiar-password", { method: "POST", body: JSON.stringify({ password_actual, password_nueva }) }),
+  },
   clientes: {
     list: () => request<any[]>("/clientes/"),
     get: (id: number) => request<any>(`/clientes/${id}`),

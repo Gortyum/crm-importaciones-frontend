@@ -42,16 +42,28 @@ const emptyItem: ItemForm = {
 const TARIFAS_KG: Record<string, number> = { Aereo: 4500, Terrestre: 1800, Maritimo: 900 };
 const TARIFAS_M3: Record<string, number> = { Aereo: 35000, Terrestre: 12000, Maritimo: 5000 };
 
-function calcFleteLocal(item: ItemForm, tc: number): number {
-  if (item.costo_flete > 0) return item.costo_flete * tc;
+// Factor que convierte el costo del item a CLP segun su divisa_origen.
+// - CLP: sin conversion (1)
+// - Misma divisa que la cotizacion: usa el tipo de cambio ajustado por el usuario
+// - USD/BRL: usa la tasa de la API de divisas
+function factorCambio(item: ItemForm, divisaGlobal: string, tipoCambioGlobal: number, divisas: Divisas): number {
+  if (item.divisa_origen === "CLP") return 1;
+  if (item.divisa_origen === divisaGlobal) return tipoCambioGlobal > 0 ? tipoCambioGlobal : 1;
+  if (item.divisa_origen === "USD") return divisas.USD > 0 ? divisas.USD : 1;
+  if (item.divisa_origen === "BRL") return divisas.BRL > 0 ? divisas.BRL : 1;
+  return tipoCambioGlobal > 0 ? tipoCambioGlobal : 1;
+}
+
+function calcFleteLocal(item: ItemForm): number {
+  if (item.costo_flete > 0) return item.costo_flete;
   const porPeso = item.peso_kg * (TARIFAS_KG[item.tipo_flete] || 1800);
   const porVol = item.volumen_m3 * (TARIFAS_M3[item.tipo_flete] || 12000);
   return Math.max(porPeso, porVol);
 }
 
-function calcItemLocal(item: ItemForm, tc: number) {
-  const costoClp = item.costo_original * tc;
-  const flete = calcFleteLocal(item, tc);
+function calcItemLocal(item: ItemForm, factor: number) {
+  const costoClp = item.costo_original * factor;
+  const flete = calcFleteLocal(item);
   const envio = item.costo_envio;
   const sub = (costoClp + flete + envio) * item.cantidad;
   const conMargen = sub * (1 + item.margen_pct / 100);
@@ -129,7 +141,8 @@ export default function NuevaCotizacion() {
 
   const resumen = items.reduce(
     (acc, it) => {
-      const calc = calcItemLocal(it, tipoCambio);
+      const factor = factorCambio(it, divisa, tipoCambio, divisas);
+      const calc = calcItemLocal(it, factor);
       acc.subtotal += calc.subtotal;
       acc.iva += calc.iva;
       acc.total += calc.total;
@@ -151,6 +164,7 @@ export default function NuevaCotizacion() {
         items: items.map((it) => ({
           ...it,
           producto_id: it.producto_id,
+          tipo_cambio: factorCambio(it, divisa, tipoCambio, divisas),
         })),
       };
       const cot = await api.cotizaciones.create(data);
@@ -217,7 +231,7 @@ export default function NuevaCotizacion() {
         </div>
 
         {items.map((item, idx) => {
-          const calc = calcItemLocal(item, tipoCambio);
+          const calc = calcItemLocal(item, factorCambio(item, divisa, tipoCambio, divisas));
           return (
             <div key={idx} className="border rounded-lg p-4 space-y-4 bg-slate-50">
               <div className="flex items-center justify-between">
@@ -256,7 +270,7 @@ export default function NuevaCotizacion() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Costo original</Label>
+                  <Label>Costo ({item.divisa_origen})</Label>
                   <Input type="number" min={0} value={item.costo_original} onChange={(e) => updateItem(idx, { costo_original: Number(e.target.value) })} />
                 </div>
                 <div>
@@ -287,7 +301,7 @@ export default function NuevaCotizacion() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Flete (manual)</Label>
+                  <Label>Flete manual (CLP)</Label>
                   <Input type="number" min={0} value={item.costo_flete} onChange={(e) => updateItem(idx, { costo_flete: Number(e.target.value) })} placeholder="0 = auto" />
                 </div>
               </div>

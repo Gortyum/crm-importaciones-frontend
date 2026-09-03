@@ -1,5 +1,7 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/hooks/AuthContext";
 import Layout from "./components/layout/Layout";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Proveedores from "./pages/Proveedores";
@@ -14,7 +16,9 @@ import NuevaImportacion from "./pages/NuevaImportacion";
 import DetalleImportacion from "./pages/DetalleImportacion";
 import Configuracion from "./pages/Configuracion";
 
-export default function App() {
+function ProtectedRoutes() {
+  const { user } = useAuth();
+  if (!user) return <Navigate to="/login" replace />;
   return (
     <Routes>
       <Route element={<Layout />}>
@@ -34,5 +38,16 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
     </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/*" element={<ProtectedRoutes />} />
+      </Routes>
+    </AuthProvider>
   );
 }
