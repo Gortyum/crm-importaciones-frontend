@@ -65,7 +65,7 @@ function calcItemLocal(item: ItemForm, factor: number) {
   const costoClp = item.costo_original * factor;
   const flete = calcFleteLocal(item);
   const envio = item.costo_envio;
-  const sub = (costoClp + flete + envio) * item.cantidad;
+  const sub = (costoClp + envio) * item.cantidad + flete;
   const conMargen = sub * (1 + item.margen_pct / 100);
   const conDesc = conMargen * (1 - item.descuento_pct / 100);
   const precioUnit = item.cantidad > 0 ? conDesc / item.cantidad : 0;
@@ -301,7 +301,7 @@ export default function NuevaCotizacion() {
                   </Select>
                 </div>
                 <div>
-                  <Label>Flete manual (CLP)</Label>
+                  <Label>Flete (CLP, total)</Label>
                   <Input type="number" min={0} value={item.costo_flete} onChange={(e) => updateItem(idx, { costo_flete: Number(e.target.value) })} placeholder="0 = auto" />
                 </div>
               </div>
