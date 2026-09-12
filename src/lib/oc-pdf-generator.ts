@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { BRAND, FONT_SANS, FONT_MONO, pdfBrandHeader } from "./pdf-brand";
 
 interface ItemPDF {
   descripcion: string;

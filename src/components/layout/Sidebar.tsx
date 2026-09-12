@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { LeafMark } from "@/components/brand/LeafMark";
 import { api } from "@/services/api";
 
 const NAV = [
@@ -74,9 +75,18 @@ export default function Sidebar() {
   return (
     <>
       <aside className="w-64 h-screen bg-slate-900 text-white flex flex-col fixed left-0 top-0">
-        <div className="p-6 border-b border-slate-700">
-          <h1 className="text-lg font-bold tracking-tight">CRM/ERP</h1>
-          <p className="text-xs text-slate-400 mt-1">Cotizaciones v0.1</p>
+        <div className="px-6 py-7 border-b border-slate-700">
+          <div className="flex items-center gap-3">
+            <LeafMark size={34} />
+            <div>
+              <h1 className="text-[0.95rem] font-bold tracking-[0.14em] uppercase leading-tight text-white">
+                Eleni Sourcing
+              </h1>
+              <p className="font-mono text-[0.6rem] tracking-[0.34em] uppercase mt-1 text-slate-400">
+                Importaciones
+              </p>
+            </div>
+          </div>
         </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV.map((item) => {

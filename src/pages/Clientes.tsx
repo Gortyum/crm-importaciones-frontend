@@ -75,7 +75,7 @@ export default function Clientes() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Clientes</h1>
-          <p className="text-slate-500 text-sm mt-1">{clientes.length} registros</p>
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">{clientes.length} registros</p>
         </div>
         <Button onClick={openNew}><Plus size={16} className="mr-1" /> Nuevo cliente</Button>
       </div>

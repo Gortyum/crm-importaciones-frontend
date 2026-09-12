@@ -28,7 +28,7 @@ export default function CotizacionesList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Cotizaciones</h1>
-          <p className="text-slate-500 text-sm mt-1">{cotizaciones.length} registros</p>
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">{cotizaciones.length} registros</p>
         </div>
         <Link to="/cotizaciones/nueva">
           <Button><Plus size={16} className="mr-1" /> Nueva cotización</Button>

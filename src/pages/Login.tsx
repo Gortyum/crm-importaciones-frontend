@@ -6,6 +6,7 @@ import { api } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
+import { LeafMark } from "@/components/brand/LeafMark";
 
 export default function Login() {
   const { user, login } = useAuth();
@@ -47,7 +48,17 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-slate-900">
       <div className="w-full max-w-sm bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">CRM/ERP</h1>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <LeafMark size={38} />
+            <div className="text-left">
+              <h1 className="text-lg font-bold tracking-[0.14em] uppercase text-slate-900 leading-tight">
+                Eleni Sourcing
+              </h1>
+              <p className="font-mono text-[0.62rem] tracking-[0.34em] uppercase text-slate-400 mt-0.5">
+                Importaciones
+              </p>
+            </div>
+          </div>
           <p className="text-sm text-slate-500 mt-1">
             {mode === "login" ? "Inicia sesión para continuar" : "Crea una cuenta nueva"}
           </p>

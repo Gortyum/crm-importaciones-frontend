@@ -123,7 +123,7 @@ export default function NuevaImportacion() {
           <Button variant="ghost" size="sm" onClick={() => navigate("/importaciones")}><ArrowLeft size={16} /></Button>
           <div>
             <h1 className="text-2xl font-bold">Nueva Importación</h1>
-            <p className="text-slate-500 text-sm mt-1">Costeo multimoneda Brasil → Chile</p>
+            <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">Costeo multimoneda Brasil → Chile</p>
           </div>
         </div>
         <Button onClick={save} disabled={saving}>{saving ? "Guardando..." : "Guardar importación"}</Button>

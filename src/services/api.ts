@@ -25,13 +25,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
+import type { DivisasResponse, LoginResponse, ReferenciasData } from "@/types/cotizacion.types";
+
 export const api = {
   auth: {
     login: (username: string, password: string) =>
-      request<any>("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+      request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
     register: (username: string, password: string) =>
       request<any>("/auth/register", { method: "POST", body: JSON.stringify({ username, password }) }),
     me: () => request<any>("/auth/me"),
+    referencias: () => request<ReferenciasData>("/auth/referencias"),
     cambiarPassword: (password_actual: string, password_nueva: string) =>
       request<any>("/auth/cambiar-password", { method: "POST", body: JSON.stringify({ password_actual, password_nueva }) }),
   },
@@ -84,7 +87,7 @@ export const api = {
     update: (data: any) => request<any>("/config/", { method: "PUT", body: JSON.stringify(data) }),
   },
   divisas: {
-    cambio: () => request<{ monedas: Record<string, number> }>("/divisas/cambio"),
+    cambio: () => request<DivisasResponse>("/divisas/cambio"),
   },
   ordenesCompra: {
     list: () => request<any[]>("/ordenes-compra/"),

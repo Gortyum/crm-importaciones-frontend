@@ -27,7 +27,7 @@ export default function OrdenesCompraList() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Órdenes de Compra</h1>
-          <p className="text-slate-500 text-sm mt-1">{ordenes.length} registros</p>
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">{ordenes.length} registros</p>
         </div>
       </div>
 

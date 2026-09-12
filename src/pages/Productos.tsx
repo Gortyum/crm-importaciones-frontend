@@ -46,7 +46,7 @@ export default function Productos() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Productos</h1>
-          <p className="text-slate-500 text-sm mt-1">{productos.length} registros</p>
+          <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">{productos.length} registros</p>
         </div>
         <Button onClick={openNew}><Plus size={16} className="mr-1" /> Nuevo producto</Button>
       </div>

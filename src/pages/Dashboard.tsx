@@ -35,7 +35,7 @@ export default function Dashboard() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-slate-500 text-sm mt-1">Resumen del sistema</p>
+        <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">Resumen del sistema</p>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
