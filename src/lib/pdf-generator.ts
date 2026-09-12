@@ -45,7 +45,6 @@ function renderHTML(data: PDFData): string {
         </div>
       </td>
       <td style="padding:10px 8px;border-bottom:1px solid ${BRAND.line};text-align:center;font-size:13px">${it.cantidad}</td>
-      <td style="padding:10px 8px;border-bottom:1px solid ${BRAND.line};text-align:center;font-size:11px;color:${BRAND.pine};font-weight:600">${it.divisa_origen}</td>
       <td style="padding:10px 8px;border-bottom:1px solid ${BRAND.line};font-size:12px;color:${BRAND.mist}">${it.tipo_personalizacion}</td>
       <td style="padding:10px 8px;border-bottom:1px solid ${BRAND.line};text-align:right;font-size:13px">${formatCLP(it.precio_venta_unitario)}</td>
       <td style="padding:10px 8px;border-bottom:1px solid ${BRAND.line};text-align:right;font-size:13px;font-weight:600">${formatCLP(it.total)}</td>
@@ -77,7 +76,6 @@ function renderHTML(data: PDFData): string {
             <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">#</th>
             <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">Producto</th>
             <th style="padding:10px 8px;text-align:center;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">Cant.</th>
-            <th style="padding:10px 8px;text-align:center;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">Divisa</th>
             <th style="padding:10px 8px;text-align:left;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">Tipo</th>
             <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">P. Unitario</th>
             <th style="padding:10px 8px;text-align:right;font-size:11px;text-transform:uppercase;color:${BRAND.mist};font-weight:700">Total</th>

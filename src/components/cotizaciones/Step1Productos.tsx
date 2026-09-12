@@ -89,10 +89,15 @@ export function Step1Productos({
   const handleImageUpload = async (idx: number, file: File) => {
     setUploadingIdx(idx);
     try {
-      const { url } = await api.upload.image(file);
-      updateItem(idx, { imagen_url: url });
+      const res = await api.archivos.upload(file, "producto", null, true);
+      updateItem(idx, { imagen_url: res.url || "" });
     } catch (e: any) {
-      alert(e.message);
+      try {
+        const { url } = await api.upload.image(file);
+        updateItem(idx, { imagen_url: url });
+      } catch (fallbackErr: any) {
+        alert(fallbackErr.message || e.message);
+      }
     } finally {
       setUploadingIdx(null);
     }

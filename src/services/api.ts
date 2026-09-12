@@ -25,7 +25,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-import type { DivisasResponse, LoginResponse, ReferenciasData } from "@/types/cotizacion.types";
+import type { DivisasResponse, LoginResponse, ReferenciasData, EntidadArchivo, ArchivoOut, ArchivoUploadResult } from "@/types/cotizacion.types";
 
 export const api = {
   auth: {
@@ -107,5 +107,34 @@ export const api = {
       }
       return res.json();
     },
+  },
+  archivos: {
+    upload: async (
+      file: File,
+      entidad_tipo: EntidadArchivo,
+      entidad_id?: number | null,
+      es_publico: boolean = false,
+    ): Promise<ArchivoUploadResult> => {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("entidad_tipo", entidad_tipo);
+      if (entidad_id != null) form.append("entidad_id", String(entidad_id));
+      form.append("es_publico", es_publico ? "true" : "false");
+      const res = await fetch(`${BASE}/archivos/upload`, {
+        method: "POST",
+        body: form,
+        headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : undefined,
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: res.statusText }));
+        throw new Error(err.detail || "Error subiendo archivo");
+      }
+      return res.json();
+    },
+    list: (entidad_tipo: EntidadArchivo, entidad_id?: number | null) =>
+      request<ArchivoOut[]>(`/archivos/?entidad_tipo=${entidad_tipo}${entidad_id != null ? `&entidad_id=${entidad_id}` : ""}`),
+    get: (id: number) => request<ArchivoOut>(`/archivos/${id}`),
+    descargar: (id: number) => `${BASE}/archivos/${id}/descargar`,
+    delete: (id: number) => request<void>(`/archivos/${id}`, { method: "DELETE" }),
   },
 };

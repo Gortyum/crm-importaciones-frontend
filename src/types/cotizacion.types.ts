@@ -193,6 +193,40 @@ export interface ImportacionOut {
 }
 
 // ─────────────────────────────────────────────
+// Datos de API — Archivos (Cloudflare R2)
+// ─────────────────────────────────────────────
+
+export type EntidadArchivo = "producto" | "cotizacion" | "orden_compra" | "proveedor" | "documento";
+
+export interface ArchivoOut {
+  id: number;
+  nombre_original: string;
+  object_key: string;
+  carpeta: string;
+  entidad_tipo: EntidadArchivo;
+  entidad_id: number | null;
+  mime_type: string;
+  tamano: number;
+  es_publico: boolean;
+  created_by: string | null;
+  created_at: string;
+  url: string | null;
+}
+
+export interface ArchivoUploadResult {
+  id: number;
+  nombre_original: string;
+  object_key: string;
+  carpeta: string;
+  entidad_tipo: EntidadArchivo;
+  entidad_id: number | null;
+  mime_type: string;
+  tamano: number;
+  es_publico: boolean;
+  url: string | null;
+}
+
+// ─────────────────────────────────────────────
 // Catálogos (listas de referencia)
 // ─────────────────────────────────────────────
 
