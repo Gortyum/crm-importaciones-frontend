@@ -45,8 +45,12 @@ export default function Clientes() {
 
   const del = async (id: number) => {
     if (!confirm("¿Eliminar este cliente?")) return;
-    await api.clientes.delete(id);
-    load();
+    try {
+      await api.clientes.delete(id);
+      load();
+    } catch (e: any) {
+      alert(e.message || "No se pudo eliminar el cliente");
+    }
   };
 
   const openContactos = async (clienteId: number) => {
