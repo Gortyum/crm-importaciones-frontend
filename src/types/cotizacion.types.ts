@@ -224,6 +224,7 @@ export interface ArchivoUploadResult {
   tamano: number;
   es_publico: boolean;
   url: string | null;
+  duplicado?: boolean;
 }
 
 // ─────────────────────────────────────────────

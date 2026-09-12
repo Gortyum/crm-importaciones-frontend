@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 import { formatCLP, formatMoney } from "@/lib/utils";
 import { generarPDF } from "@/lib/pdf-generator";
 import { generarOC_PDF } from "@/lib/oc-pdf-generator";
+import { ArchivosAdjuntos } from "@/components/ArchivosAdjuntos";
 import { ESTADOS_COLORES, TRANSICIONES } from "@/types/cotizacion.types";
 
 export default function DetalleCotizacion() {
@@ -469,6 +470,9 @@ export default function DetalleCotizacion() {
           </div>
         </div>
       </div>
+
+      {/* ── DOCUMENTOS ADJUNTOS ── */}
+      <ArchivosAdjuntos entidadTipo="cotizacion" entidadId={cot.id} />
     </div>
   );
 }
