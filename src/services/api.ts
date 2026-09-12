@@ -4,6 +4,17 @@ const BASE = import.meta.env.VITE_API_URL
 
 import { getToken, clearSession } from "@/lib/auth";
 
+// Endpoints públicos de auth: un 401 ahí significa credenciales incorrectas
+// (y no una sesión expirada), así que no debemos redirigir a /login.
+const ENDPOINTS_PUBLICOS = new Set(["/auth/login", "/auth/register"]);
+
+function irALogin() {
+  clearSession();
+  if (!window.location.pathname.startsWith("/login")) {
+    window.location.assign("/login");
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -17,7 +28,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     headers,
   });
   if (!res.ok) {
-    if (res.status === 401) clearSession();
+    if (res.status === 401 && !ENDPOINTS_PUBLICOS.has(path)) irALogin();
     const err = await res.json().catch(() => ({ detail: res.statusText }));
     throw new Error(err.detail || "Error de servidor");
   }
@@ -102,6 +113,7 @@ export const api = {
       form.append("file", file);
       const res = await fetch(`${BASE}/upload/`, { method: "POST", body: form });
       if (!res.ok) {
+        if (res.status === 401) irALogin();
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || "Error subiendo imagen");
       }
@@ -126,6 +138,7 @@ export const api = {
         headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : undefined,
       });
       if (!res.ok) {
+        if (res.status === 401) irALogin();
         const err = await res.json().catch(() => ({ detail: res.statusText }));
         throw new Error(err.detail || "Error subiendo archivo");
       }
