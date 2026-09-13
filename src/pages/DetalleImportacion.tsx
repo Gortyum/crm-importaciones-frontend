@@ -36,6 +36,7 @@ const NOMBRE_COSTOS: Record<string, string> = {
   Gastos_Frontera_PuertoSeco: "Gastos Frontera / Puerto Seco",
   Honorarios_Agente_Aduana: "Honorarios Agente de Aduana",
   Flete_Terrestre_Local: "Flete Terrestre Local (Chile)",
+  Otros: "Otros gastos",
 };
 const NOMBRE_COSTO = (cat: string) => NOMBRE_COSTOS[cat] || COSTOS_POR_TRANSPORTE.Aereo.find((x) => x.categoria === cat)?.etiqueta || cat;
 
@@ -151,7 +152,7 @@ export default function DetalleImportacion() {
             <p className="font-mono font-medium">{formatMoney(r.contingencia_usd || 0, "USD")}</p>
           </div>
           <div>
-            <p className="text-sm text-slate-500">Arancel ({r.config?.arancel_pct || 0}%)</p>
+            <p className="text-sm text-slate-500">Arancel ({r.config?.arancel_pct || 0}% sobre FOB + gastos locales)</p>
             <p className="font-mono font-medium">{formatMoney(r.arancel_usd || 0, "USD")}</p>
           </div>
           <div>
@@ -228,6 +229,9 @@ export default function DetalleImportacion() {
           </table>
           <div className="mt-4 pt-3 border-t space-y-1">
             <p className="text-sm text-slate-500 flex justify-between"><span>Gastos locales</span><span className="font-mono">{formatMoney(r.gastos_locales_clp || 0, "CLP")}</span></p>
+            {(r.otros_clp || 0) > 0 && (
+              <p className="text-sm text-slate-500 flex justify-between"><span>Otros</span><span className="font-mono">{formatMoney(r.otros_clp || 0, "CLP")}</span></p>
+            )}
             <p className="text-sm text-slate-900 flex justify-between font-semibold"><span>Costo almacén</span><span className="font-mono">{formatMoney(r.costo_almacen_clp || 0, "CLP")}</span></p>
           </div>
         </div>

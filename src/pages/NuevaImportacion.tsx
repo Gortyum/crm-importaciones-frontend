@@ -15,7 +15,7 @@ interface Categoria { id: number; nombre: string; }
 const MAX_ITEMS_PREVIEW = 3;
 
 function defaultCostos(transporte: string): CostoForm[] {
-  return COSTOS_POR_TRANSPORTE[transporte].map((c) => ({ categoria: c.categoria, tipo: c.tipo, monto: 0, divisa: c.tipo === "flete_local" || c.tipo === "honorarios" ? "CLP" : "USD", proveedor_id: null }));
+  return COSTOS_POR_TRANSPORTE[transporte].map((c) => ({ categoria: c.categoria, tipo: c.tipo, monto: 0, divisa: c.tipo === "flete_local" || c.tipo === "honorarios" || c.tipo === "otros" ? "CLP" : "USD", proveedor_id: null }));
 }
 
 const emptyItem: ItemImportacion = { producto_id: null, descripcion: "", cantidad: 1, precio_unitario_fabrica: 0, divisa: "USD", margen_pct: 35 };
@@ -62,7 +62,7 @@ export default function NuevaImportacion() {
     setCostos((prev) => {
       return COSTOS_POR_TRANSPORTE[t].map((c) => {
         const existente = prev.find((p) => p.categoria === c.categoria);
-        return existente ? { ...existente } : { categoria: c.categoria, tipo: c.tipo, monto: 0, divisa: c.tipo === "flete_local" || c.tipo === "honorarios" ? "CLP" : "USD", proveedor_id: null };
+        return existente ? { ...existente } : { categoria: c.categoria, tipo: c.tipo, monto: 0, divisa: c.tipo === "flete_local" || c.tipo === "honorarios" || c.tipo === "otros" ? "CLP" : "USD", proveedor_id: null };
       });
     });
   };
@@ -313,10 +313,12 @@ export default function NuevaImportacion() {
           <div className="space-y-1">
             <p className="text-sm text-slate-500">Contingencia ({contPct}%)</p>
             <p className="font-medium font-mono">{formatMoney(preview.contingencia_usd, "USD")}</p>
-            <p className="text-sm text-slate-500 mt-2">Arancel ({preview.config.arancel_pct}%)</p>
+            <p className="text-sm text-slate-500 mt-2">Arancel ({preview.config.arancel_pct}% sobre FOB + gastos locales)</p>
             <p className="font-medium font-mono">{formatMoney(preview.arancel_usd, "USD")}</p>
             <p className="text-sm text-slate-500 mt-2">Gastos locales (directo en CLP)</p>
             <p className="font-medium font-mono">{formatMoney(preview.gastos_locales_clp, "CLP")}</p>
+            <p className="text-sm text-slate-500 mt-2">Otros (se suman al final)</p>
+            <p className="font-medium font-mono">{formatMoney(preview.otros_clp, "CLP")}</p>
             <p className="text-sm text-slate-500 mt-2">IVA importación (informativo)</p>
             <p className="font-medium font-mono text-amber-600">{formatMoney(preview.iva_importacion_clp, "CLP")}</p>
           </div>

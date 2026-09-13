@@ -80,6 +80,7 @@ export const api = {
     list: () => request<any[]>("/cotizaciones/"),
     get: (id: number) => request<any>(`/cotizaciones/${id}`),
     create: (data: any) => request<any>("/cotizaciones/", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: number, data: any) => request<any>(`/cotizaciones/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     changeEstado: (id: number, estado: string) => request<any>(`/cotizaciones/${id}/estado`, { method: "PATCH", body: JSON.stringify({ estado }) }),
     pdfData: (id: number) => request<any>(`/cotizaciones/${id}/pdf-data`),
     crearImportacion: (id: number) => request<any>(`/cotizaciones/${id}/crear-importacion`, { method: "POST" }),

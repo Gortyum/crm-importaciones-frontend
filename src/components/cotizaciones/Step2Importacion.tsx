@@ -109,7 +109,7 @@ export function Step2Importacion({
         categoria: c.categoria,
         tipo: c.tipo,
         monto: 0,
-        divisa: c.tipo === "flete_local" || c.tipo === "honorarios" ? "CLP" : "USD",
+        divisa: c.tipo === "flete_local" || c.tipo === "honorarios" || c.tipo === "otros" ? "CLP" : "USD",
         proveedor_id: null,
       }))
     );
@@ -244,6 +244,7 @@ export function Step2Importacion({
               seguroUsd={preview.seguro_usd}
               arancelUsd={preview.arancel_usd}
               gastosLocalesClp={preview.gastos_locales_clp}
+              otrosClp={preview.otros_clp}
               contingenciaUsd={preview.contingencia_usd}
               tcUsdClp={tcUsdClp}
               extranjeroNoCifUsd={preview.extranjero_no_cif_usd}

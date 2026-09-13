@@ -12,6 +12,7 @@ import {
   FileCheck,
   AlertCircle,
   Package,
+  Pencil,
 } from "lucide-react";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/Button";
@@ -67,8 +68,15 @@ export default function DetalleCotizacion() {
 
   const handlePDF = async () => {
     if (!cot) return;
-    const data = await api.cotizaciones.pdfData(cot.id);
-    generarPDF(data);
+    try {
+      const data = await api.cotizaciones.pdfData(cot.id);
+      generarPDF(data);
+      if (!cot.pdf_emitido) {
+        setCot({ ...cot, pdf_emitido: true });
+      }
+    } catch (e: any) {
+      alert(e.message || "Error generando el PDF");
+    }
   };
 
   const handleCrearOC = async (proveedorId: number) => {
@@ -148,6 +156,11 @@ export default function DetalleCotizacion() {
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${ESTADOS_COLORES[cot.estado] || "bg-slate-100"}`}>
                 {cot.estado}
               </span>
+              {cot.pdf_emitido && (
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-white" title="PDF generado: la cotización no se puede editar">
+                  PDF emitido
+                </span>
+              )}
             </div>
             <p className="text-slate-400 text-xs mt-0.5">
               Fecha de emisión: {new Date(cot.fecha).toLocaleDateString("es-CL")}
@@ -157,6 +170,12 @@ export default function DetalleCotizacion() {
 
         {/* Acciones principales */}
         <div className="flex flex-wrap items-center gap-2">
+          {!cot.pdf_emitido && (
+            <Button variant="outline" size="sm" onClick={() => navigate(`/cotizaciones/editar/${cot.id}`)}>
+              <Pencil size={14} className="mr-1.5" /> Editar
+            </Button>
+          )}
+
           <Button variant="outline" size="sm" onClick={handlePDF}>
             <Download size={14} className="mr-1.5" /> PDF Cotización
           </Button>

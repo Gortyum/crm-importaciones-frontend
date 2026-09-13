@@ -28,6 +28,7 @@ function ProtectedRoutes() {
         <Route path="/productos" element={<Productos />} />
         <Route path="/cotizaciones" element={<CotizacionesList />} />
         <Route path="/cotizaciones/nueva" element={<NuevaCotizacion />} />
+        <Route path="/cotizaciones/editar/:id" element={<NuevaCotizacion />} />
         <Route path="/cotizaciones/:id" element={<DetalleCotizacion />} />
         <Route path="/ordenes-compra" element={<OrdenesCompraList />} />
         <Route path="/ordenes-compra/:id" element={<DetalleOrdenCompra />} />

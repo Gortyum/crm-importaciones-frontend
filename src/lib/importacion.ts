@@ -4,7 +4,7 @@ export const DIVISAS = ["USD", "BRL", "CLP"] as const;
 export interface CampoCosto {
   categoria: string;
   etiqueta: string;
-  tipo: "flete" | "seguro" | "despacho" | "honorarios" | "flete_local";
+  tipo: "flete" | "seguro" | "despacho" | "honorarios" | "flete_local" | "otros";
 }
 
 export const COSTOS_POR_TRANSPORTE: Record<string, CampoCosto[]> = {
@@ -12,6 +12,7 @@ export const COSTOS_POR_TRANSPORTE: Record<string, CampoCosto[]> = {
     { categoria: "Flete_Courier", etiqueta: "Flete Courier (Brasil → Chile)", tipo: "flete" },
     { categoria: "Gastos_Despacho_Courier", etiqueta: "Gastos Despacho Courier", tipo: "despacho" },
     { categoria: "Flete_Terrestre_Local", etiqueta: "Flete Terrestre Local (Chile)", tipo: "flete_local" },
+    { categoria: "Otros", etiqueta: "Otros gastos", tipo: "otros" },
   ],
   Aereo: [
     { categoria: "Flete_Aereo_Int", etiqueta: "Flete Aéreo Internacional", tipo: "flete" },
@@ -19,6 +20,7 @@ export const COSTOS_POR_TRANSPORTE: Record<string, CampoCosto[]> = {
     { categoria: "Gastos_Terminal_Aereo", etiqueta: "Gastos Terminal Aérea", tipo: "despacho" },
     { categoria: "Honorarios_Agente_Aduana", etiqueta: "Honorarios Agente de Aduana", tipo: "honorarios" },
     { categoria: "Flete_Terrestre_Local", etiqueta: "Flete Terrestre Local (Chile)", tipo: "flete_local" },
+    { categoria: "Otros", etiqueta: "Otros gastos", tipo: "otros" },
   ],
   Terrestre: [
     { categoria: "Flete_Terrestre_Int", etiqueta: "Flete Terrestre Internacional", tipo: "flete" },
@@ -26,6 +28,7 @@ export const COSTOS_POR_TRANSPORTE: Record<string, CampoCosto[]> = {
     { categoria: "Gastos_Frontera_PuertoSeco", etiqueta: "Gastos Frontera / Puerto Seco", tipo: "despacho" },
     { categoria: "Honorarios_Agente_Aduana", etiqueta: "Honorarios Agente de Aduana", tipo: "honorarios" },
     { categoria: "Flete_Terrestre_Local", etiqueta: "Flete Terrestre Local (Chile)", tipo: "flete_local" },
+    { categoria: "Otros", etiqueta: "Otros gastos", tipo: "otros" },
   ],
 };
 
@@ -51,6 +54,13 @@ export function toUSD(monto: number, divisa: string, tcUsdClp: number, tcBrlUsd:
   if (d === "CLP") return tcUsdClp ? monto / tcUsdClp : 0;
   if (d === "BRL") return monto * tcBrlUsd;
   return monto;
+}
+
+export function toCLP(monto: number, divisa: string, tcUsdClp: number, tcBrlUsd: number): number {
+  const d = (divisa || "USD").toUpperCase();
+  if (d === "CLP") return monto;
+  const monto_usd = toUSD(monto, d, tcUsdClp, tcBrlUsd);
+  return tcUsdClp ? monto_usd * tcUsdClp : monto_usd;
 }
 
 export function calcImportacion(
@@ -81,21 +91,25 @@ export function calcImportacion(
   let seguro_usd = 0;
   let extranjero_no_cif_usd = 0;
   let gastos_locales_clp = 0;
+  let otros_clp = 0;
   for (const c of costos) {
     const monto_usd = toUSD(c.monto, c.divisa, tc_usd_clp, tc_brl_usd);
-    if (c.divisa && c.divisa.toUpperCase() === "CLP") gastos_locales_clp += c.monto;
+    if (c.tipo === "otros") otros_clp += toCLP(c.monto, c.divisa, tc_usd_clp, tc_brl_usd);
     else if (c.tipo === "flete") flete_usd += monto_usd;
     else if (c.tipo === "seguro") seguro_usd += monto_usd;
+    else if (c.divisa && c.divisa.toUpperCase() === "CLP") gastos_locales_clp += c.monto;
     else extranjero_no_cif_usd += monto_usd;
   }
 
   const cif_total_usd = fob_total + flete_usd + seguro_usd;
-  const arancel_usd = cif_total_usd * (arancel_pct / 100);
+  const base_arancel_usd = fob_total + (tc_usd_clp ? gastos_locales_clp / tc_usd_clp : 0);
+  const arancel_usd = base_arancel_usd * (arancel_pct / 100);
   const base_contingencia_usd = cif_total_usd + extranjero_no_cif_usd;
   const contingencia_usd = base_contingencia_usd * (contingencia_pct / 100);
   const sub_ext_seguro_usd = base_contingencia_usd + contingencia_usd;
 
-  const costo_almacen_clp = sub_ext_seguro_usd * tc_usd_clp + arancel_usd * tc_usd_clp + gastos_locales_clp;
+  const costo_almacen_clp =
+    sub_ext_seguro_usd * tc_usd_clp + arancel_usd * tc_usd_clp + gastos_locales_clp + otros_clp;
   const iva_importacion_clp = (cif_total_usd + arancel_usd) * (iva_pct / 100) * tc_usd_clp;
 
   const cantidad_total = items.reduce((s, i) => s + i.cantidad, 0);
@@ -137,6 +151,7 @@ export function calcImportacion(
     contingencia_usd: Math.round(contingencia_usd * 100) / 100,
     sub_total_extranjero_usd: Math.round(sub_ext_seguro_usd * 100) / 100,
     gastos_locales_clp: Math.round(gastos_locales_clp * 100) / 100,
+    otros_clp: Math.round(otros_clp * 100) / 100,
     costo_almacen_clp: Math.round(costo_almacen_clp),
     iva_importacion_clp: Math.round(iva_importacion_clp),
     costo_unitario_promedio_clp: Math.round(unitario_promedio),

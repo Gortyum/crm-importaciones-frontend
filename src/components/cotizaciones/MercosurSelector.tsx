@@ -76,6 +76,9 @@ export function MercosurSelector({
               <span>Arancel aplicable</span>
               <span className="font-mono font-bold">{arancelGeneral}%</span>
             </div>
+            <p className="text-[11px] text-amber-600 mt-1">
+              Se calcula sobre FOB + gastos locales (sin flete ni seguro).
+            </p>
           </div>
         )}
       </div>

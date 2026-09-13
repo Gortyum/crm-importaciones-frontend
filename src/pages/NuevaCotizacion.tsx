@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { ArrowLeft, Lock } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/hooks/AuthContext";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +12,7 @@ import { Step4Resumen } from "@/components/cotizaciones/Step4Resumen";
 import {
   EMPTY_FORM,
   type CotizacionFormData,
+  type CostoImportacionForm,
   type Cliente,
   type Contacto,
   type Producto,
@@ -23,6 +24,8 @@ import {
 
 export default function NuevaCotizacion() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const editingId = id ? Number(id) : null;
   const { referencias } = useAuth();
 
   // Catálogos
@@ -44,7 +47,10 @@ export default function NuevaCotizacion() {
   // Estado del formulario
   const [form, setForm] = useState<CotizacionFormData>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [refreshingDivisas, setRefreshingDivisas] = useState(false);
+  const [cargandoEdicion, setCargandoEdicion] = useState(!!editingId);
+  const [bloqueada, setBloqueada] = useState(false);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -63,7 +69,7 @@ export default function NuevaCotizacion() {
         if (cfg) setConfig(cfg);
 
         // Pre-cargar tipos de cambio desde backend
-        if (!referencias) {
+        if (!referencias && !editingId) {
           const usdRate = div.tc_cotizacion?.USD ?? div.monedas?.USD ?? 950;
           const brlRate = div.monedas?.BRL && div.monedas?.USD
             ? Math.round((div.monedas.BRL / div.monedas.USD) * 10000) / 10000
@@ -85,6 +91,7 @@ export default function NuevaCotizacion() {
   // Sembrar el formulario con las referencias cacheadas en el login
   // (monedas, TC, config) antes de que resuelvan las llamadas a la API.
   useEffect(() => {
+    if (editingId) return;
     if (!referencias) return;
     setConfig(referencias.config);
     const usdRate = referencias.tc_cotizacion?.USD ?? referencias.monedas?.USD ?? 950;
@@ -98,6 +105,86 @@ export default function NuevaCotizacion() {
       contingencia_pct: referencias.seguridad_pct ?? 2,
     }));
   }, [referencias]);
+
+  // Modo edición: hidratar el formulario con la cotización existente
+  useEffect(() => {
+    if (!editingId) return;
+    (async () => {
+      try {
+        const cot = await api.cotizaciones.get(editingId);
+        if (cot.pdf_emitido) {
+          setBloqueada(true);
+          return;
+        }
+        let costoImportacion: CostoImportacionForm[] = [];
+        let tcBrl = 0.18;
+        let contPct = 2;
+        let cert = true;
+        let impData: any = null;
+        if (cot.importacion_id) {
+          try {
+            impData = await api.importaciones.get(cot.importacion_id);
+            costoImportacion = (impData.costos || []).map((c: any) => ({
+              categoria: c.categoria,
+              tipo: c.tipo_costo || c.tipo,
+              monto: c.monto,
+              divisa: c.divisa,
+              proveedor_id: null,
+            }));
+            tcBrl = impData.tc_brl_usd || 0.18;
+            contPct = impData.contingencia_pct ?? 2;
+            cert = impData.cert_origen;
+          } catch {
+            /* sin importación asociada editable */
+          }
+        }
+        const items: ItemForm[] = (cot.items || []).map((it: any) => ({
+          producto_id: it.producto_id ?? null,
+          proveedor_id: it.proveedor_id ?? null,
+          descripcion: it.descripcion || "",
+          cantidad: it.cantidad || 1,
+          costo_original: it.costo_original || 0,
+          divisa_origen: it.divisa_origen || "USD",
+          peso_kg: it.peso_kg || 0,
+          volumen_m3: it.volumen_m3 || 0,
+          tipo_flete: it.tipo_flete || "Terrestre",
+          costo_flete: it.costo_flete || 0,
+          costo_envio: it.costo_envio || 0,
+          imagen_url: it.imagen_url || "",
+          margen_pct: it.margen_pct ?? 30,
+          descuento_pct: it.descuento_pct || 0,
+          tipo_personalizacion: it.tipo_personalizacion || "Serigrafia",
+          iva_pct: it.iva_pct ?? 19,
+        }));
+        setForm({
+          cliente_id: cot.cliente_id,
+          contacto_id: cot.contacto_id ?? null,
+          notas: cot.notas || "",
+          items,
+          divisa_global: cot.divisa_original || "USD",
+          tc_usd_clp: cot.tipo_cambio || 950,
+          tc_brl_usd: tcBrl,
+          incluir_importacion: !!cot.importacion_id,
+          transporte: impData?.transporte || "Aereo",
+          cert_origen: cot.importacion_id ? cert : true,
+          contingencia_pct: contPct,
+          costos_importacion: costoImportacion,
+        });
+        if (cot.cliente_id) {
+          try {
+            const conts = await api.clientes.contactos(cot.cliente_id);
+            setContactos(conts);
+          } catch {
+            setContactos([]);
+          }
+        }
+      } catch (e: any) {
+        setError(e.message || "No se pudo cargar la cotización");
+      } finally {
+        setCargandoEdicion(false);
+      }
+    })();
+  }, [editingId]);
 
   const handleClienteChange = async (clienteId: number) => {
     setForm((prev) => ({ ...prev, cliente_id: clienteId, contacto_id: null }));
@@ -144,27 +231,39 @@ export default function NuevaCotizacion() {
     setSaving(true);
     try {
       // Calcular factor de cambio para cada item
-      const payload = {
+      const itemsPayload = form.items.map((it) => {
+        let factorItem = 1;
+        if (it.divisa_origen === "USD") {
+          factorItem = form.tc_usd_clp;
+        } else if (it.divisa_origen === "BRL") {
+          factorItem = (form.tc_brl_usd || 0.18) * form.tc_usd_clp;
+        }
+
+        return {
+          ...it,
+          producto_id: it.producto_id,
+          proveedor_id: it.proveedor_id,
+          tipo_cambio: factorItem,
+        };
+      });
+
+      const basePayload = {
         cliente_id: form.cliente_id,
         contacto_id: form.contacto_id,
         divisa_original: form.divisa_global || "USD",
         tipo_cambio: form.tc_usd_clp,
         notas: form.notas,
-        items: form.items.map((it) => {
-          let factorItem = 1;
-          if (it.divisa_origen === "USD") {
-            factorItem = form.tc_usd_clp;
-          } else if (it.divisa_origen === "BRL") {
-            factorItem = (form.tc_brl_usd || 0.18) * form.tc_usd_clp;
-          }
+        items: itemsPayload,
+      };
 
-          return {
-            ...it,
-            producto_id: it.producto_id,
-            proveedor_id: it.proveedor_id,
-            tipo_cambio: factorItem,
-          };
-        }),
+      if (editingId) {
+        const cot = await api.cotizaciones.update(editingId, basePayload);
+        navigate(`/cotizaciones/${cot.id}`);
+        return;
+      }
+
+      const payload = {
+        ...basePayload,
         importacion: form.incluir_importacion
           ? {
               transporte: form.transporte,
@@ -198,17 +297,43 @@ export default function NuevaCotizacion() {
   const clienteSeleccionado = clientes.find((c) => c.id === form.cliente_id);
   const contactoSeleccionado = contactos.find((c) => c.id === form.contacto_id);
 
+  if (cargandoEdicion) {
+    return <div className="p-8 text-center text-slate-400">Cargando cotización...</div>;
+  }
+
+  if (bloqueada) {
+    return (
+      <div className="max-w-xl mx-auto mt-16 text-center space-y-4">
+        <div className="mx-auto w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center">
+          <Lock size={24} className="text-slate-400" />
+        </div>
+        <h1 className="text-xl font-bold text-slate-800">Cotización ya emitida</h1>
+        <p className="text-sm text-slate-500">
+          Esta cotización ya generó su PDF y no puede editarse. Si necesitas cambios, crea una nueva cotización.
+        </p>
+        <div className="flex justify-center gap-2">
+          <Button variant="outline" onClick={() => navigate(`/cotizaciones/${editingId}`)}>
+            Ver cotización
+          </Button>
+          <Button onClick={() => navigate("/cotizaciones/nueva")}>Nueva cotización</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/cotizaciones")}>
+        <Button variant="ghost" size="sm" onClick={() => navigate(editingId ? `/cotizaciones/${editingId}` : "/cotizaciones")}>
           <ArrowLeft size={16} />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Nueva Cotización</h1>
+          <h1 className="text-2xl font-bold text-slate-800">{editingId ? "Editar Cotización" : "Nueva Cotización"}</h1>
           <p className="text-slate-500 text-xs mt-0.5">
-            Proceso guiado: Productos → Importación → Precio → Resumen
+            {editingId
+              ? "Modifica la cotización. Los cambios quedan bloqueados una vez generado el PDF."
+              : "Proceso guiado: Productos → Importación → Precio → Resumen"}
           </p>
         </div>
       </div>

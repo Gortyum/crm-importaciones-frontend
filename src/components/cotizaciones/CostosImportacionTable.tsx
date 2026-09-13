@@ -22,6 +22,7 @@ const CATEGORIAS_ETIQUETAS: Record<string, string> = {
   Flete_Terrestre_Int: "Flete Terrestre Internacional",
   Seguro_Transito_Terr: "Seguro Tránsito Terrestre",
   Gastos_Frontera_PuertoSeco: "Gastos Frontera / Puerto Seco",
+  Otros: "Otros gastos",
 };
 
 export function CostosImportacionTable({

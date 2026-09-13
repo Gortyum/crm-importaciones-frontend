@@ -12,6 +12,7 @@ interface LandedCostCardProps {
   seguroUsd: number;
   arancelUsd: number;
   gastosLocalesClp: number;
+  otrosClp: number;
   contingenciaUsd: number;
   tcUsdClp: number;
   extranjeroNoCifUsd: number;
@@ -25,6 +26,7 @@ export function LandedCostCard({
   seguroUsd,
   arancelUsd,
   gastosLocalesClp,
+  otrosClp,
   contingenciaUsd,
   tcUsdClp,
   extranjeroNoCifUsd,
@@ -49,6 +51,7 @@ export function LandedCostCard({
     { label: "Gastos en frontera / despacho", valor: extrasClp },
     { label: "Contingencia cambiaria", valor: contingenciaClp },
     { label: "Gastos locales", valor: gastosLocalesClp },
+    { label: "Otros", valor: otrosClp },
   ].filter((f) => f.valor > 0);
 
   return (

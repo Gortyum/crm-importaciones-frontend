@@ -77,6 +77,11 @@ export interface ItemCotizacionOut {
   costo_original: number;
   divisa_origen: string;
   tipo_cambio: number;
+  peso_kg: number;
+  volumen_m3: number;
+  tipo_flete: string;
+  costo_flete: number;
+  costo_envio: number;
   margen_pct: number;
   descuento_pct: number;
   iva_pct: number;
@@ -92,6 +97,7 @@ export interface CotizacionOut {
   id: number;
   correlativo: string;
   estado: string;
+  pdf_emitido?: boolean;
   fecha: string;
   created_at: string;
   cliente_id: number;
