@@ -152,7 +152,7 @@ export default function DetalleImportacion() {
             <p className="font-mono font-medium">{formatMoney(r.contingencia_usd || 0, "USD")}</p>
           </div>
           <div>
-            <p className="text-sm text-slate-500">Arancel ({r.config?.arancel_pct || 0}% sobre FOB + gastos locales)</p>
+            <p className="text-sm text-slate-500">Arancel ({r.config?.arancel_pct || 0}% sobre CIF)</p>
             <p className="font-mono font-medium">{formatMoney(r.arancel_usd || 0, "USD")}</p>
           </div>
           <div>

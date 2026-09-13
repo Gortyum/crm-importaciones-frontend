@@ -77,7 +77,7 @@ export function MercosurSelector({
               <span className="font-mono font-bold">{arancelGeneral}%</span>
             </div>
             <p className="text-[11px] text-amber-600 mt-1">
-              Se calcula sobre FOB + gastos locales (sin flete ni seguro).
+              Se calcula sobre el CIF (FOB + flete + seguro).
             </p>
           </div>
         )}

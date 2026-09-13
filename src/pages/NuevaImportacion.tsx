@@ -313,7 +313,7 @@ export default function NuevaImportacion() {
           <div className="space-y-1">
             <p className="text-sm text-slate-500">Contingencia ({contPct}%)</p>
             <p className="font-medium font-mono">{formatMoney(preview.contingencia_usd, "USD")}</p>
-            <p className="text-sm text-slate-500 mt-2">Arancel ({preview.config.arancel_pct}% sobre FOB + gastos locales)</p>
+            <p className="text-sm text-slate-500 mt-2">Arancel ({preview.config.arancel_pct}% sobre CIF)</p>
             <p className="font-medium font-mono">{formatMoney(preview.arancel_usd, "USD")}</p>
             <p className="text-sm text-slate-500 mt-2">Gastos locales (directo en CLP)</p>
             <p className="font-medium font-mono">{formatMoney(preview.gastos_locales_clp, "CLP")}</p>

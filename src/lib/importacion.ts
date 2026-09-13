@@ -102,8 +102,7 @@ export function calcImportacion(
   }
 
   const cif_total_usd = fob_total + flete_usd + seguro_usd;
-  const base_arancel_usd = fob_total + (tc_usd_clp ? gastos_locales_clp / tc_usd_clp : 0);
-  const arancel_usd = base_arancel_usd * (arancel_pct / 100);
+  const arancel_usd = cif_total_usd * (arancel_pct / 100);
   const base_contingencia_usd = cif_total_usd + extranjero_no_cif_usd;
   const contingencia_usd = base_contingencia_usd * (contingencia_pct / 100);
   const sub_ext_seguro_usd = base_contingencia_usd + contingencia_usd;
