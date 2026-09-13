@@ -7,6 +7,7 @@ import { formatCLP } from "@/lib/utils";
 
 interface Cotizacion {
   id: number; correlativo: string; estado: string; fecha: string; total_general: number;
+  cliente?: { razon_social: string } | null;
 }
 
 const ESTADO_COLORS: Record<string, string> = {
@@ -40,6 +41,7 @@ export default function CotizacionesList() {
           <thead>
             <tr className="text-left text-slate-500 border-b bg-slate-50">
               <th className="p-3">Correlativo</th>
+              <th className="p-3">Cliente</th>
               <th className="p-3">Estado</th>
               <th className="p-3">Fecha</th>
               <th className="p-3 text-right">Total</th>
@@ -50,6 +52,7 @@ export default function CotizacionesList() {
             {cotizaciones.map((c) => (
               <tr key={c.id} className="border-b last:border-0 hover:bg-slate-50">
                 <td className="p-3 font-mono font-medium">{c.correlativo}</td>
+                <td className="p-3 font-medium">{c.cliente?.razon_social || "—"}</td>
                 <td className="p-3">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_COLORS[c.estado] || "bg-slate-100"}`}>
                     {c.estado}
@@ -65,7 +68,7 @@ export default function CotizacionesList() {
               </tr>
             ))}
             {cotizaciones.length === 0 && (
-              <tr><td colSpan={5} className="p-8 text-center text-slate-400">Sin cotizaciones. <Link to="/cotizaciones/nueva" className="text-blue-600 hover:underline">Crear primera cotización</Link></td></tr>
+              <tr><td colSpan={6} className="p-8 text-center text-slate-400">Sin cotizaciones. <Link to="/cotizaciones/nueva" className="text-blue-600 hover:underline">Crear primera cotización</Link></td></tr>
             )}
           </tbody>
         </table>
