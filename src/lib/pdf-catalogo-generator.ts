@@ -38,8 +38,8 @@ function renderHTML(data: CatalogoPDFInput): string {
       ? imagenes
           .map(
             (img, i) => `
-            <div style="flex:0 0 150px;background:#fff;border:1px solid ${BRAND.line};border-radius:3px;padding:8px">
-              <img src="${img}" style="width:132px;height:132px;object-fit:contain;display:block" crossorigin="anonymous" />
+            <div style="flex:0 0 calc(50% - 6px);background:#fff;border:1px solid ${BRAND.line};border-radius:3px;padding:10px">
+              <img src="${img}" style="width:100%;height:300px;object-fit:contain;display:block" crossorigin="anonymous" />
               <p style="margin:8px 0 0;font-size:10px;text-align:center;color:${BRAND.mist};font-family:${FONT_MONO}">Vista ${i + 1}</p>
             </div>`
           )
@@ -69,6 +69,9 @@ function renderHTML(data: CatalogoPDFInput): string {
 
   return `
     <div style="font-family:${FONT_SANS};width:794px;padding:36px;background:${BEIGE};color:${BRAND.carbon}">
+      <div style="margin:-36px -36px 30px;padding:12px 0;background:#151b17;border-bottom:3px solid ${BRAND.pine}">
+        <p style="margin:0;text-align:center;font-size:15px;font-style:italic;font-weight:800;color:${BRAND.pineHi};letter-spacing:3px">mockup</p>
+      </div>
       ${pdfBrandHeader({ titulo: `[${data.correlativo}]`, correlativo: "CATÁLOGO · DOCUMENTO A4", fecha: fechaFmt, fechaEtiqueta: "Fecha" })}
 
       <div style="display:flex;gap:10px;margin-bottom:26px">
