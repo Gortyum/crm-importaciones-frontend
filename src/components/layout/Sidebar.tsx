@@ -8,6 +8,7 @@ import {
   FileText,
   ShoppingCart,
   Ship,
+  Images,
   Settings,
   LogOut,
   KeyRound,
@@ -29,6 +30,7 @@ const NAV = [
   { to: "/cotizaciones", label: "Cotizaciones", icon: FileText },
   { to: "/ordenes-compra", label: "Órdenes de Compra", icon: ShoppingCart },
   { to: "/importaciones", label: "Importaciones", icon: Ship },
+  { to: "/documentos", label: "Documentos", icon: Images },
   { to: "/configuracion", label: "Configuración", icon: Settings },
 ];
 

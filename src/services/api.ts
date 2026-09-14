@@ -36,7 +36,7 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-import type { DivisasResponse, LoginResponse, ReferenciasData, EntidadArchivo, ArchivoOut, ArchivoUploadResult } from "@/types/cotizacion.types";
+import type { DivisasResponse, LoginResponse, ReferenciasData, EntidadArchivo, ArchivoOut, ArchivoUploadResult, DocumentoOut, DocumentoPDFData } from "@/types/cotizacion.types";
 
 export const api = {
   auth: {
@@ -107,6 +107,13 @@ export const api = {
     create: (data: any) => request<any>("/ordenes-compra/", { method: "POST", body: JSON.stringify(data) }),
     changeEstado: (id: number, estado: string) => request<any>(`/ordenes-compra/${id}/estado?estado=${estado}`, { method: "PATCH" }),
     pdfData: (id: number) => request<any>(`/ordenes-compra/${id}/pdf-data`),
+  },
+  documentos: {
+    list: () => request<DocumentoOut[]>("/documentos/"),
+    create: (data: any) => request<DocumentoOut>("/documentos/", { method: "POST", body: JSON.stringify(data) }),
+    get: (id: number) => request<DocumentoOut>(`/documentos/${id}`),
+    pdfData: (id: number) => request<DocumentoPDFData>(`/documentos/${id}/pdf-data`),
+    delete: (id: number) => request<void>(`/documentos/${id}`, { method: "DELETE" }),
   },
   upload: {
     image: async (file: File): Promise<{ url: string; filename: string }> => {

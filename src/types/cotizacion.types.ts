@@ -109,6 +109,7 @@ export interface CotizacionOut {
   importacion_correlativo: string;
   items: ItemCotizacionOut[];
   total_general: number;
+  cliente?: Cliente | null;
 }
 
 // ─────────────────────────────────────────────
@@ -231,6 +232,47 @@ export interface ArchivoUploadResult {
   es_publico: boolean;
   url: string | null;
   duplicado?: boolean;
+}
+
+// ─────────────────────────────────────────────
+// Datos de API — Documentos (catálogo PDF)
+// ─────────────────────────────────────────────
+
+export interface DocumentoEspecificaciones {
+  material: string;
+  personalizacion: string;
+  color: string;
+  medida_logo: string;
+}
+
+export interface DocumentoProductoPDF {
+  descripcion: string;
+  cantidad: number;
+  imagen_url: string;
+}
+
+export interface DocumentoOut {
+  id: number;
+  correlativo: string;
+  cotizacion_id: number;
+  cotizacion_correlativo: string;
+  cliente_razon_social: string;
+  fecha: string;
+  cantidad_total: number;
+  productos: DocumentoProductoPDF[];
+  especificaciones: DocumentoEspecificaciones | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface DocumentoPDFData {
+  correlativo: string;
+  fecha: string | null;
+  cliente_razon_social: string;
+  cotizacion_correlativo: string;
+  productos: DocumentoProductoPDF[];
+  cantidad_total: number;
+  especificaciones: DocumentoEspecificaciones | null;
 }
 
 // ─────────────────────────────────────────────

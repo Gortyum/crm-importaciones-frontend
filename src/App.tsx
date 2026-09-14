@@ -14,6 +14,9 @@ import DetalleOrdenCompra from "./pages/DetalleOrdenCompra";
 import ImportacionesList from "./pages/ImportacionesList";
 import NuevaImportacion from "./pages/NuevaImportacion";
 import DetalleImportacion from "./pages/DetalleImportacion";
+import DocumentosList from "./pages/DocumentosList";
+import NuevoDocumento from "./pages/NuevoDocumento";
+import DetalleDocumento from "./pages/DetalleDocumento";
 import Configuracion from "./pages/Configuracion";
 
 function ProtectedRoutes() {
@@ -35,6 +38,9 @@ function ProtectedRoutes() {
         <Route path="/importaciones" element={<ImportacionesList />} />
         <Route path="/importaciones/nueva" element={<NuevaImportacion />} />
         <Route path="/importaciones/:id" element={<DetalleImportacion />} />
+        <Route path="/documentos" element={<DocumentosList />} />
+        <Route path="/documentos/nuevo" element={<NuevoDocumento />} />
+        <Route path="/documentos/:id" element={<DetalleDocumento />} />
         <Route path="/configuracion" element={<Configuracion />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Route>
