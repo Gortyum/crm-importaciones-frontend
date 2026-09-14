@@ -105,7 +105,7 @@ function renderHTML(data: PDFData): string {
       </div>` : ""}
 
       <div style="margin-top:40px;padding-top:16px;border-top:1px solid ${BRAND.line};text-align:center">
-        <p style="margin:0;font-size:11px;color:${BRAND.mist2}">Esta cotización tiene una vigencia de 30 días desde la fecha de emisión.</p>
+        <p style="margin:0;font-size:11px;color:${BRAND.mist2}">Esta cotización tiene una vigencia de 10 días desde la fecha de emisión.</p>
       </div>
     </div>
   `;
