@@ -1,24 +1,16 @@
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { LOGO_DATA_URI } from "./pdf-brand";
 import type { DocumentoEspecificaciones, DocumentoPDFData } from "@/types/cotizacion.types";
 
-const BEIGE = "#F1EBE2";
-const INK = "#1A1A1A";
-const MUTED = "#8C837A";
-const PINK = "#FF2D95";
-const HAIRLINE = "rgba(26,26,26,.12)";
-const FONT_STACK = "Poppins, Manrope, 'Helvetica Neue', Arial, sans-serif";
-const MM = 2.83465;
-
-interface PaletaGorra {
-  main: string;
-  shade: string;
-  line: string;
-  trim: string;
-}
-
-const NEGRA: PaletaGorra = { main: "#1F1F1F", shade: "#101010", line: "#3A3A3A", trim: PINK };
-const GRIS: PaletaGorra = { main: "#707070", shade: "#5A5A5A", line: "#8C8C8C", trim: PINK };
+const BEIGE = "#f5f2ea";
+const BAND = "#10170d";
+const GRAY = "#8b8b82";
+const INK = "#10170d";
+const MUTED = "#8b8b82";
+const GREEN = "#668b69";
+const FONT_SANS = "Poppins, Manrope, 'Helvetica Neue', Arial, sans-serif";
+const FONT_SERIF = "Georgia, 'Times New Roman', serif";
 
 export interface CatalogoPDFInput extends DocumentoPDFData {
   fotos: string[];
@@ -39,80 +31,26 @@ function formatFecha(fecha: string | null): string {
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
-function caps(view: "front" | "side" | "back", c: PaletaGorra): string {
-  const defs: Record<string, string> = {
-    front: `
-      <path fill="${c.main}" d="M40 92 C40 30 160 30 160 92 Z"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M100 33 V92"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M71 40 C67 58 66 76 67 92"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M129 40 C133 58 134 76 133 92"/>
-      <circle fill="${c.main}" stroke="${c.line}" stroke-width="1" cx="100" cy="31" r="4.5"/>
-      <path fill="${c.shade}" d="M26 88 Q100 130 174 88 Q100 96 26 88 Z"/>
-      <path stroke="${c.trim}" stroke-width="3.6" fill="none" stroke-linecap="round" d="M28 88 Q100 129 172 88"/>`,
-    side: `
-      <path fill="${c.main}" d="M46 92 C46 36 140 36 140 92 Z"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M93 38 V92"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M65 48 C61 62 60 78 61 92"/>
-      <circle fill="${c.main}" stroke="${c.line}" stroke-width="1" cx="93" cy="37" r="4.5"/>
-      <path fill="${c.shade}" d="M116 79 Q170 68 194 88 Q158 102 114 95 Z"/>
-      <path stroke="${c.trim}" stroke-width="3.2" fill="none" stroke-linecap="round" d="M117 79 Q170 69 193 88"/>`,
-    back: `
-      <path fill="${c.main}" d="M42 92 C42 32 158 32 158 92 Z"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M100 34 V92"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M70 42 C66 60 65 76 66 92"/>
-      <path stroke="${c.line}" stroke-width="1.1" fill="none" d="M130 42 C134 60 135 76 134 92"/>
-      <circle fill="${c.main}" stroke="${c.line}" stroke-width="1" cx="100" cy="33" r="4.5"/>
-      <path fill="${c.shade}" d="M30 92 Q60 102 100 102 Q140 102 170 92 Q140 97 100 97 Q60 97 30 92 Z"/>
-      <path stroke="${c.trim}" stroke-width="2.8" fill="none" stroke-linecap="round" d="M32 92 Q60 101 100 101 Q140 101 168 92"/>
-      <path fill="${BEIGE}" d="M64 74 h72 a9 9 0 0 1 0 18 h-72 a9 9 0 0 1 0 -18 z"/>`,
-  };
-  return defs[view];
+function labelCelda(texto: string, chico = false): string {
+  return `<td style="background:${GRAY};color:${BEIGE};font-size:${chico ? 10.5 : 13}px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;padding:13px 16px;white-space:nowrap">
+    ${texto}
+  </td>`;
 }
 
-function capSVG(view: "front" | "side" | "back", c: PaletaGorra, flip = false): string {
-  const transform = flip ? "transform:scaleX(-1);" : "";
-  return `<svg viewBox="0 0 200 150" style="display:block;width:100%;height:auto;${transform}">${caps(view, c)}</svg>`;
+function valorCelda(texto: string): string {
+  return `<td style="padding:13px 16px;font-size:13.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;line-height:1.25;color:${INK};text-align:left">
+    ${texto}
+  </td>`;
 }
 
-function capLogo(): string {
-  return `
-    <div style="position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);text-align:center;white-space:nowrap;color:#FFFFFF;pointer-events:none;font-size:${(5.6 * MM).toFixed(1)}px">
-      <div style="display:flex;align-items:stretch;gap:0.10em;justify-content:center">
-        <span style="font-size:1em;font-weight:300;letter-spacing:-0.01em;line-height:1">La<b style="font-weight:700">mopa</b></span>
-        <span style="width:.17em;background:${PINK};border-radius:.02em"></span>
-      </div>
-      <div style="height:.085em;background:${PINK};margin-top:.085em"></div>
-      <div style="margin-top:.55em;font-size:.27em;font-weight:500;letter-spacing:.2em;color:${PINK}">FACILITY SOLUTIONS</div>
-    </div>`;
-}
-
-function capHero(c: PaletaGorra): string {
-  return `<div style="position:relative">
-    ${capSVG("front", c)}
-    ${capLogo()}
-  </div>`;
-}
-
-function miniCol(c: PaletaGorra): string {
-  return `<div style="display:flex;flex-direction:column;gap:${(4 * MM).toFixed(1)}px">
-    ${capSVG("back", c)}
-    ${capSVG("side", c)}
-    ${capSVG("side", c, true)}
-  </div>`;
-}
-
-function field(label: string, value: string): string {
-  return `<div style="min-width:0">
-    <span style="display:block;font-size:8.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:${MUTED};margin-bottom:5px">${label}</span>
-    <span style="display:block;font-size:13.5px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;line-height:1.25">${value}</span>
-  </div>`;
-}
-
-function spec(label: string, value: string): string {
-  return `<div style="min-width:0">
-    <span style="display:block;font-size:8.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:${MUTED};margin-bottom:5px">${label}</span>
-    <span style="display:block;font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;line-height:1.3">${value || "—"}</span>
-  </div>`;
+function tablaDatos(rows: Array<[string, string, boolean?]>, chico: boolean): string {
+  return `<table style="width:100%;border-collapse:collapse;margin:0">
+    ${rows
+      .map(
+        ([label, value, isChico = false]) => `<tr>${labelCelda(label, chico || isChico)}${valorCelda(value)}</tr>`
+      )
+      .join("")}
+  </table>`;
 }
 
 function asegurarPoppins(): Promise<void> {
@@ -149,35 +87,75 @@ function renderHTML(data: CatalogoPDFInput): string {
   const cantidad = data.cantidad_total || data.productos[0]?.cantidad || 0;
   const espec: DocumentoEspecificaciones = data.especificaciones || SPEC_VACIAS;
 
-  const gapGrid = (5 * MM).toFixed(1);
-  const padBottom = (6 * MM).toFixed(1);
-  const gapShow = (7 * MM).toFixed(1);
-  const gapMini = (4 * MM).toFixed(1);
-  const gapHero = (6 * MM).toFixed(1);
-  const padTopSpec = (6 * MM).toFixed(1);
+  const fotos = data.fotos;
+  const fotoHTML =
+    fotos.length > 0
+      ? fotos
+          .map(
+            (url) => `
+      <img src="${url}"
+           style="max-height:${fotos.length === 1 ? 520 : 300}px;max-width:calc(100% - 12px);object-fit:contain;border-radius:2px;margin:6px"
+           crossorigin="anonymous" />`
+          )
+          .join("")
+      : `<p style="color:${MUTED};font-size:12px">Sin fotografías adjuntadas.</p>`;
 
   return `
-<div style="width:794px;min-height:1123px;background:${BEIGE};padding:${(15 * MM).toFixed(1)}px ${(14 * MM).toFixed(1)}px ${(13 * MM).toFixed(1)}px;display:flex;flex-direction:column;gap:${(9 * MM).toFixed(1)}px;overflow:hidden;font-family:${FONT_STACK};color:${INK};position:relative">
-  <div style="text-align:right;font-size:10.5px;font-weight:500;letter-spacing:.1em;color:${MUTED}">${fechaFmt}</div>
+<div style="width:794px;height:1123px;background:${BEIGE};overflow:hidden;font-family:${FONT_SANS};color:${INK};display:flex;flex-direction:column;position:relative">
 
-  <section style="display:grid;grid-template-columns:1fr 1.25fr 1.35fr .7fr;gap:${gapGrid}px;padding-bottom:${padBottom}px;border-bottom:1px solid ${HAIRLINE}">
-    ${field("Cliente", data.cliente_razon_social || "—")}
-    ${field("Producto", producto)}
-    ${field("N° Cotización", data.cotizacion_correlativo || "—")}
-    ${field("Cantidad", String(cantidad))}
+  <header style="height:115px;background:${BAND};display:flex;align-items:center;justify-content:space-between;padding:0 72px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:18px">
+      <div style="width:19px;height:19px;background:${BEIGE};border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <img src="${LOGO_DATA_URI}" style="width:14px;height:14px;border-radius:1px" crossorigin="anonymous" />
+      </div>
+      <div style="text-align:left">
+        <div style="color:${BEIGE};font-size:13px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;white-space:nowrap">ELENI SOURCING</div>
+        <div style="color:${MUTED};font-size:6.7px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;margin-top:4px;white-space:nowrap">Promocionales · Importación</div>
+      </div>
+    </div>
+    <div style="font-family:${FONT_SERIF};font-style:italic;font-weight:500;font-size:42px;color:${GREEN};letter-spacing:.01em">MockUp</div>
+  </header>
+
+  <div style="text-align:right;font-size:10.7px;font-weight:500;letter-spacing:.08em;color:${MUTED};padding:14px 72px 0;flex-shrink:0">${fechaFmt}</div>
+
+  <section style="display:flex;gap:2px;padding:22px 79px 0;flex-shrink:0">
+    <div style="flex:1;display:flex;flex-direction:column;border-collapse:separate">
+      ${tablaDatos([
+        ["Cliente", data.cliente_razon_social || "—"],
+        ["N° Cotización", data.cotizacion_correlativo || "—"],
+      ], false)}
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column">
+      ${tablaDatos([
+        ["Producto", producto],
+        ["Cantidad", String(cantidad)],
+      ], false)}
+    </div>
   </section>
 
-  <section style="flex:1;display:grid;grid-template-columns:1.4fr 1fr;gap:${gapShow}px;align-items:center">
-    <div style="display:flex;flex-direction:column;gap:${gapHero}px">${capHero(NEGRA)}${capHero(GRIS)}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:${gapMini}px;align-content:center">${miniCol(NEGRA)}${miniCol(GRIS)}</div>
+  <section style="flex:1;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;padding:18px 79px;min-height:0">
+    ${fotoHTML}
   </section>
 
-  <section style="display:grid;grid-template-columns:1fr 1.1fr 1.5fr 1fr;gap:${gapGrid}px;padding-top:${padTopSpec}px;border-top:1px solid ${HAIRLINE}">
-    ${spec("Material", espec.material)}
-    ${spec("Personalización", espec.personalizacion)}
-    ${spec("Color", espec.color)}
-    ${spec("Medida logo", espec.medida_logo)}
+  <section style="display:flex;gap:2px;padding:0 79px;flex-shrink:0">
+    <div style="flex:1;display:flex;flex-direction:column">
+      ${tablaDatos([
+        ["Material", espec.material || "—"],
+        ["Color", espec.color || "—"],
+      ], false)}
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column">
+      ${tablaDatos([
+        ["Personalización", espec.personalizacion || "—"],
+        ["Medida logo", espec.medida_logo || "—"],
+      ], true)}
+    </div>
   </section>
+
+  <footer style="display:flex;justify-content:space-between;align-items:center;padding:16px 72px 22px;flex-shrink:0">
+    <span style="font-size:10.7px;font-weight:500;letter-spacing:.08em;color:${MUTED}">ELENI SOURCING · PROMOCIONALES · IMPORTACIÓN · CHILE</span>
+    <span style="font-size:10.7px;font-weight:500;letter-spacing:.08em;color:${MUTED}">1/1</span>
+  </footer>
 </div>`;
 }
 
