@@ -70,7 +70,7 @@ export default function NuevaCotizacion() {
 
         // Pre-cargar tipos de cambio desde backend
         if (!referencias && !editingId) {
-          const usdRate = div.tc_cotizacion?.USD ?? div.monedas?.USD ?? 950;
+          const usdRate = div.monedas?.USD ?? 950;
           const brlRate = div.monedas?.BRL && div.monedas?.USD
             ? Math.round((div.monedas.BRL / div.monedas.USD) * 10000) / 10000
             : 0.18;
@@ -94,7 +94,7 @@ export default function NuevaCotizacion() {
     if (editingId) return;
     if (!referencias) return;
     setConfig(referencias.config);
-    const usdRate = referencias.tc_cotizacion?.USD ?? referencias.monedas?.USD ?? 950;
+    const usdRate = referencias.monedas?.USD ?? 950;
     const brlRate = referencias.monedas?.BRL && referencias.monedas?.USD
       ? Math.round((referencias.monedas.BRL / referencias.monedas.USD) * 10000) / 10000
       : 0.18;
@@ -204,7 +204,7 @@ export default function NuevaCotizacion() {
     try {
       const div = await api.divisas.cambio();
       setDivisas(div);
-      const usdRate = div.tc_cotizacion?.USD ?? div.monedas?.USD ?? 950;
+      const usdRate = div.monedas?.USD ?? 950;
       setForm((prev) => ({ ...prev, tc_usd_clp: usdRate }));
     } catch (e) {
       console.error(e);
@@ -247,23 +247,13 @@ export default function NuevaCotizacion() {
         };
       });
 
-      const basePayload = {
+      const payload = {
         cliente_id: form.cliente_id,
         contacto_id: form.contacto_id,
         divisa_original: form.divisa_global || "USD",
         tipo_cambio: form.tc_usd_clp,
         notas: form.notas,
         items: itemsPayload,
-      };
-
-      if (editingId) {
-        const cot = await api.cotizaciones.update(editingId, basePayload);
-        navigate(`/cotizaciones/${cot.id}`);
-        return;
-      }
-
-      const payload = {
-        ...basePayload,
         importacion: form.incluir_importacion
           ? {
               transporte: form.transporte,
@@ -284,6 +274,12 @@ export default function NuevaCotizacion() {
             }
           : null,
       };
+
+      if (editingId) {
+        const cot = await api.cotizaciones.update(editingId, payload);
+        navigate(`/cotizaciones/${cot.id}`);
+        return;
+      }
 
       const cot = await api.cotizaciones.create(payload);
       navigate(`/cotizaciones/${cot.id}`);

@@ -28,17 +28,26 @@ export default function DetalleCotizacion() {
   const [cot, setCot] = useState<any>(null);
   const [imp, setImp] = useState<any>(null);
   const [proveedores, setProveedores] = useState<any[]>([]);
+  const [productoFotos, setProductoFotos] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [creandoOCId, setCreandoOCId] = useState<number | null>(null);
 
   const load = async () => {
     try {
-      const [cotData, provs] = await Promise.all([
+      const [cotData, provs, fotosProductos] = await Promise.all([
         api.cotizaciones.get(Number(id)),
         api.proveedores.list(),
+        api.archivos.list("producto"),
       ]);
       setCot(cotData);
       setProveedores(provs);
+      const fotoPorProducto: Record<number, string> = {};
+      fotosProductos.forEach((f: any) => {
+        if (f.url && f.entidad_id != null && !fotoPorProducto[f.entidad_id]) {
+          fotoPorProducto[f.entidad_id] = f.url;
+        }
+      });
+      setProductoFotos(fotoPorProducto);
       if (cotData.importacion_id) {
         try {
           const impData = await api.importaciones.get(cotData.importacion_id);
@@ -70,6 +79,11 @@ export default function DetalleCotizacion() {
     if (!cot) return;
     try {
       const data = await api.cotizaciones.pdfData(cot.id);
+      data.items = (data.items || []).map((it: any, idx: number) => {
+        const orig = cot.items?.[idx];
+        const foto = orig?.producto_id ? productoFotos[orig.producto_id] : "";
+        return { ...it, imagen_url: it.imagen_url || foto || "" };
+      });
       generarPDF(data);
       if (!cot.pdf_emitido) {
         setCot({ ...cot, pdf_emitido: true });
@@ -422,13 +436,14 @@ export default function DetalleCotizacion() {
             <tbody className="divide-y divide-slate-100">
               {cot.items?.map((item: any) => {
                 const prov = proveedores.find((p: any) => p.id === item.proveedor_id);
+                const imagenItem = item.imagen_url || (item.producto_id ? productoFotos[item.producto_id] : "") || "";
                 return (
                   <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2.5">
-                        {item.imagen_url && (
+                        {imagenItem && (
                           <img
-                            src={item.imagen_url}
+                            src={imagenItem}
                             alt=""
                             className="w-10 h-10 object-contain rounded border border-slate-200 shrink-0 bg-white"
                           />

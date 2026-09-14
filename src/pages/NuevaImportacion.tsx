@@ -46,6 +46,7 @@ export default function NuevaImportacion() {
         setConfig(cfg);
         if (div.monedas.USD) setTcUsdClp(div.monedas.USD);
         if (div.monedas.USD && div.monedas.BRL) setTcBrlUsd(Math.round((div.monedas.BRL / div.monedas.USD) * 10000) / 10000);
+        if (div.seguridad_pct) setContPct(div.seguridad_pct);
       });
   }, []);
 
@@ -54,6 +55,7 @@ export default function NuevaImportacion() {
       const div = await api.divisas.cambio();
       setTcUsdClp(div.monedas.USD || 0);
       if (div.monedas.USD && div.monedas.BRL) setTcBrlUsd(Math.round((div.monedas.BRL / div.monedas.USD) * 10000) / 10000);
+      if (div.seguridad_pct) setContPct(div.seguridad_pct);
     } catch { /* mantiene los valores actuales */ }
   };
 

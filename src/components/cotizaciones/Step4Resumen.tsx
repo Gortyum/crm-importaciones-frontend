@@ -212,8 +212,19 @@ export function Step4Resumen({
                 return (
                   <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
                     <td className="py-3 px-4">
-                      <p className="font-semibold text-slate-800">{it.descripcion || "Item"}</p>
-                      <p className="text-[10px] text-slate-400">{it.tipo_personalizacion}</p>
+                      <div className="flex items-center gap-2.5">
+                        {it.imagen_url && (
+                          <img
+                            src={it.imagen_url}
+                            alt=""
+                            className="w-9 h-9 object-contain rounded border border-slate-200 shrink-0 bg-white"
+                          />
+                        )}
+                        <div>
+                          <p className="font-semibold text-slate-800">{it.descripcion || "Item"}</p>
+                          <p className="text-[10px] text-slate-400">{it.tipo_personalizacion}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="py-3 px-4 text-slate-600">
                       {prov?.razon_social || <span className="text-slate-300">—</span>}

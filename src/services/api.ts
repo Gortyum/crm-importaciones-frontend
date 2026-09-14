@@ -112,7 +112,11 @@ export const api = {
     image: async (file: File): Promise<{ url: string; filename: string }> => {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch(`${BASE}/upload/`, { method: "POST", body: form });
+      const res = await fetch(`${BASE}/upload/`, {
+        method: "POST",
+        body: form,
+        headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : undefined,
+      });
       if (!res.ok) {
         if (res.status === 401) irALogin();
         const err = await res.json().catch(() => ({ detail: res.statusText }));

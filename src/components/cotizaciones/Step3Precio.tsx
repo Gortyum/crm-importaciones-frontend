@@ -147,7 +147,12 @@ export function Step3Precio({
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
-                <div className="font-semibold truncate max-w-[140px]">{it.descripcion || `Item ${idx + 1}`}</div>
+                <div className="flex items-center gap-1.5">
+                  {it.imagen_url && (
+                    <img src={it.imagen_url} alt="" className="w-5 h-5 object-contain rounded border border-slate-200 shrink-0" />
+                  )}
+                  <span className="font-semibold truncate max-w-[120px]">{it.descripcion || `Item ${idx + 1}`}</span>
+                </div>
                 <div className="text-[10px] text-slate-400">Margen: {it.margen_pct}%</div>
               </button>
             ))}

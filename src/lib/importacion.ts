@@ -114,7 +114,8 @@ export function calcImportacion(
   const cantidad_total = items.reduce((s, i) => s + i.cantidad, 0);
   const unitario_promedio = cantidad_total ? costo_almacen_clp / cantidad_total : 0;
 
-  const itemsOut = itemsInfo.map((it) => {
+  const itemsOut: Array<Record<string, any>> = [];
+  for (const it of itemsInfo) {
     const cantidad = it.cantidad || 0;
     const share = fob_total ? it.fob_usd / fob_total : cantidad_total ? cantidad / cantidad_total : 0;
     const cif_item = it.fob_usd + (flete_usd + seguro_usd) * share;
@@ -123,7 +124,13 @@ export function calcImportacion(
     const margen = it.margen_pct;
     const neto = margen < 100 ? unitario / (1 - margen / 100) : 0;
     const iva = neto * (iva_pct / 100);
-    return {
+
+    const precioVentaUnitario = Math.round(neto);
+    const subtotalLinea = Math.round(neto * cantidad);
+    const ivaLinea = Math.round(subtotalLinea * (iva_pct / 100));
+    const totalLinea = subtotalLinea + ivaLinea;
+
+    itemsOut.push({
       producto_id: it.producto_id,
       descripcion: it.descripcion,
       cantidad,
@@ -136,8 +143,11 @@ export function calcImportacion(
       precio_venta_neto_clp: Math.round(neto),
       iva_venta_clp: Math.round(iva),
       precio_venta_total_clp: Math.round(neto + iva),
-    };
-  });
+      subtotal_venta_clp: subtotalLinea,
+      iva_linea_clp: ivaLinea,
+      total_linea_clp: totalLinea,
+    });
+  }
 
   return {
     config: { tc_usd_clp, tc_brl_usd, contingencia_pct, cert_origen, arancel_pct, iva_pct },
@@ -157,9 +167,9 @@ export function calcImportacion(
     cantidad_total,
     items: itemsOut,
     totales_venta: {
-      neto: Math.round(itemsOut.reduce((s, i) => s + i.precio_venta_neto_clp, 0)),
-      iva: Math.round(itemsOut.reduce((s, i) => s + i.iva_venta_clp, 0)),
-      total: Math.round(itemsOut.reduce((s, i) => s + i.precio_venta_total_clp, 0)),
+      neto: itemsOut.reduce((s, i) => s + i.subtotal_venta_clp, 0),
+      iva: itemsOut.reduce((s, i) => s + i.iva_linea_clp, 0),
+      total: itemsOut.reduce((s, i) => s + i.total_linea_clp, 0),
     },
   };
 }

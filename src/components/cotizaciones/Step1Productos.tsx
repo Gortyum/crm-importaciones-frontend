@@ -81,9 +81,18 @@ export function Step1Productos({
     });
   };
 
-  const selectProducto = (idx: number, prodId: number) => {
+  const selectProducto = async (idx: number, prodId: number) => {
     const prod = productos.find((p) => p.id === prodId);
-    updateItem(idx, { producto_id: prodId, descripcion: prod?.nombre || "" });
+    let imagen = "";
+    if (prod && !items[idx]?.imagen_url) {
+      try {
+        const fotos = await api.archivos.list("producto", prodId);
+        imagen = fotos.find((f) => f.url)?.url || "";
+      } catch {
+        /* sin foto adjunta del producto */
+      }
+    }
+    updateItem(idx, { producto_id: prodId, descripcion: prod?.nombre || "", imagen_url: imagen || items[idx]?.imagen_url || "" });
   };
 
   const handleImageUpload = async (idx: number, file: File) => {
