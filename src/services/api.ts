@@ -160,6 +160,22 @@ export const api = {
       request<ArchivoOut[]>(`/archivos/?entidad_tipo=${entidad_tipo}${entidad_id != null ? `&entidad_id=${entidad_id}` : ""}`),
     get: (id: number) => request<ArchivoOut>(`/archivos/${id}`),
     descargar: (id: number) => `${BASE}/archivos/${id}/descargar`,
+    toDataURL: async (id: number): Promise<string> => {
+      const res = await fetch(`${BASE}/archivos/${id}/contenido`, {
+        headers: getToken() ? { Authorization: `Bearer ${getToken()}` } : undefined,
+      });
+      if (!res.ok) {
+        if (res.status === 401) irALogin();
+        throw new Error("No se pudo cargar la imagen");
+      }
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result as string);
+        fr.onerror = () => reject(new Error("No se pudo leer la imagen"));
+        fr.readAsDataURL(blob);
+      });
+    },
     delete: (id: number) => request<void>(`/archivos/${id}`, { method: "DELETE" }),
   },
 };

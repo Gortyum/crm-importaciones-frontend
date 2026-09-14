@@ -88,13 +88,14 @@ function renderHTML(data: CatalogoPDFInput): string {
   const espec: DocumentoEspecificaciones = data.especificaciones || SPEC_VACIAS;
 
   const fotos = data.fotos;
+  const maxAlturaFoto = fotos.length === 1 ? 520 : fotos.length === 2 ? 300 : 240;
   const fotoHTML =
     fotos.length > 0
       ? fotos
           .map(
             (url) => `
       <img src="${url}"
-           style="max-height:${fotos.length === 1 ? 520 : 300}px;max-width:calc(100% - 12px);object-fit:contain;border-radius:2px;margin:6px"
+           style="max-height:${maxAlturaFoto}px;max-width:calc(100% - 12px);object-fit:contain;border-radius:2px;margin:6px"
            crossorigin="anonymous" />`
           )
           .join("")

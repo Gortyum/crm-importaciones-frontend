@@ -49,13 +49,10 @@ export default function DetalleDocumento() {
     try {
       await cargarFotos();
       const archivos = await api.archivos.list("documento", documentoId);
-      const urls = await Promise.all(
+      const dataUrls = await Promise.all(
         archivos
           .filter((a) => a.mime_type.startsWith("image/"))
-          .map(async (a: ArchivoOut) => {
-            const detalle = await api.archivos.get(a.id);
-            return detalle.url || a.url || "";
-          })
+          .map(async (a: ArchivoOut) => api.archivos.toDataURL(a.id))
       );
       await generarPDFCatalogo({
         correlativo: doc.correlativo,
@@ -65,7 +62,7 @@ export default function DetalleDocumento() {
         productos: data.productos,
         cantidad_total: data.cantidad_total,
         especificaciones: data.especificaciones,
-        fotos: urls.filter(Boolean),
+        fotos: dataUrls.filter(Boolean),
       });
       setNota("PDF generado y descargado.");
     } catch (e: any) {
