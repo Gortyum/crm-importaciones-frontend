@@ -37,7 +37,7 @@ const NAV = [
 export default function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, demo, logout } = useAuth();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pwActual, setPwActual] = useState("");
   const [pwNueva, setPwNueva] = useState("");
@@ -84,9 +84,16 @@ export default function Sidebar() {
               <h1 className="text-[0.95rem] font-bold tracking-[0.14em] uppercase leading-tight text-white">
                 Eleni Sourcing
               </h1>
-              <p className="font-mono text-[0.6rem] tracking-[0.34em] uppercase mt-1 text-slate-400">
-                Importaciones
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-[0.6rem] tracking-[0.34em] uppercase mt-1 text-slate-400">
+                  Importaciones
+                </p>
+                {demo && (
+                  <span className="mt-1 inline-flex items-center rounded-full bg-emerald-500/20 px-2 py-0.5 text-[0.6rem] font-bold tracking-widest text-emerald-400 uppercase">
+                    Demo
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -113,14 +120,16 @@ export default function Sidebar() {
             <p className="text-sm font-medium text-white">Usuario: {user}</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openDialog}
-              className="flex-1 bg-transparent border-slate-600 text-slate-200 hover:bg-slate-800 hover:text-white"
-            >
-              <KeyRound size={14} className="mr-1" /> Contraseña
-            </Button>
+            {!demo && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={openDialog}
+                className="flex-1 bg-transparent border-slate-600 text-slate-200 hover:bg-slate-800 hover:text-white"
+              >
+                <KeyRound size={14} className="mr-1" /> Contraseña
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"

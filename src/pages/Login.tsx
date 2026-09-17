@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Lock, User } from "lucide-react";
+import { Lock, Rocket, User } from "lucide-react";
 import { useAuth } from "@/hooks/AuthContext";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/Label";
 import { LeafMark } from "@/components/brand/LeafMark";
 
 export default function Login() {
-  const { user, login } = useAuth();
+  const { user, login, demoLogin } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
@@ -42,6 +42,19 @@ export default function Login() {
     setMode(mode === "login" ? "register" : "login");
     setError("");
     setPassword("");
+  };
+
+  const entrarDemo = async () => {
+    setError("");
+    setLoading(true);
+    try {
+      await demoLogin();
+      navigate("/", { replace: true });
+    } catch (err: any) {
+      setError(err.message || "No se pudo entrar al modo demo");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,6 +120,23 @@ export default function Login() {
         >
           {mode === "login" ? "¿No tienes cuenta? Regístrate" : "Ya tengo cuenta, iniciar sesión"}
         </button>
+        {mode === "login" && (
+          <div className="mt-5 pt-5 border-t border-slate-200">
+            <p className="text-xs text-slate-500 text-center mb-2">
+              ¿Solo quieres explorar?
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={entrarDemo}
+              disabled={loading}
+            >
+              <Rocket size={16} />
+              Probar demo
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

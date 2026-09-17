@@ -6,7 +6,7 @@ import { getToken, clearSession } from "@/lib/auth";
 
 // Endpoints públicos de auth: un 401 ahí significa credenciales incorrectas
 // (y no una sesión expirada), así que no debemos redirigir a /login.
-const ENDPOINTS_PUBLICOS = new Set(["/auth/login", "/auth/register"]);
+const ENDPOINTS_PUBLICOS = new Set(["/auth/login", "/auth/register", "/auth/demo-login"]);
 
 function irALogin() {
   clearSession();
@@ -42,6 +42,7 @@ export const api = {
   auth: {
     login: (username: string, password: string) =>
       request<LoginResponse>("/auth/login", { method: "POST", body: JSON.stringify({ username, password }) }),
+    demoLogin: () => request<LoginResponse>("/auth/demo-login", { method: "POST" }),
     register: (username: string, password: string) =>
       request<any>("/auth/register", { method: "POST", body: JSON.stringify({ username, password }) }),
     me: () => request<any>("/auth/me"),
