@@ -130,7 +130,7 @@ export default function DetalleImportacion() {
 
       <div className="bg-card p-5">
         <h2 className="font-semibold text-sm uppercase text-slate-500 mb-3">Resumen de costeo</h2>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div>
             <p className="text-sm text-slate-500">FOB</p>
             <p className="font-mono font-medium">{formatMoney(r.fob_total_usd || 0, "USD")}</p>
@@ -170,10 +170,10 @@ export default function DetalleImportacion() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="bg-card p-5">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="bg-card overflow-x-auto p-5">
           <h2 className="font-semibold text-sm uppercase text-slate-500 mb-3">Items / Precios de venta</h2>
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="text-left text-slate-500 border-b">
                 <th className="pb-2">Item</th>
@@ -209,9 +209,9 @@ export default function DetalleImportacion() {
           </table>
         </div>
 
-        <div className="bg-card p-5">
+        <div className="bg-card overflow-x-auto p-5">
           <h2 className="font-semibold text-sm uppercase text-slate-500 mb-3">Costos de importación</h2>
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[360px] text-sm">
             <tbody>
               {(imp.costos || []).map((c: any) => (
                 <tr key={c.id} className="border-b last:border-0">

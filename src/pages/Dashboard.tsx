@@ -38,7 +38,7 @@ export default function Dashboard() {
         <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">Resumen del sistema</p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.label} className="bg-card p-5 flex items-center gap-4">
             <div className={`${c.color} text-white p-3 rounded-lg`}>
@@ -52,7 +52,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="bg-card p-5">
+      <div className="bg-card overflow-x-auto p-5">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-semibold">Últimas cotizaciones</h2>
           <Link to="/cotizaciones" className="text-sm text-blue-600 hover:underline">Ver todas</Link>
@@ -60,7 +60,7 @@ export default function Dashboard() {
         {ultimas.length === 0 ? (
           <p className="text-slate-400 text-sm">No hay cotizaciones aún</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[420px] text-sm">
             <thead>
               <tr className="text-left text-slate-500 border-b">
                 <th className="pb-2">Correlativo</th>

@@ -87,8 +87,8 @@ export default function Proveedores() {
         <p className="text-xs text-slate-400 mt-2">Estas categorías se usan como roles (Mercancía, Logística, Aduana, Flete Local) en las importaciones.</p>
       </div>
 
-      <div className="bg-card overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-card overflow-x-auto">
+        <table className="w-full min-w-[820px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 border-b bg-slate-50">
               <th className="p-3">Razón Social</th>

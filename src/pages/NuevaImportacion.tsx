@@ -213,12 +213,12 @@ export default function NuevaImportacion() {
         </div>
       )}
 
-      <div className="bg-card p-5">
+      <div className="bg-card overflow-x-auto p-5">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-sm uppercase text-slate-500">Items de mercancía</h2>
           <Button variant="outline" size="sm" onClick={addItem}><Plus size={14} className="mr-1" /> Agregar item</Button>
         </div>
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 border-b">
               <th className="pb-2">Descripción</th>
@@ -296,12 +296,12 @@ export default function NuevaImportacion() {
         </div>
       </div>
 
-      <div className="bg-card p-5">
+      <div className="bg-card overflow-x-auto p-5">
         <div className="flex items-center gap-2 mb-4">
           <Calculator size={16} className="text-blue-600" />
           <h2 className="font-semibold text-sm uppercase text-slate-500">Costeo en vivo</h2>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="space-y-1">
             <p className="text-sm text-slate-500">FOB Total</p>
             <p className="font-medium font-mono">{formatMoney(preview.fob_total_usd, "USD")}</p>
@@ -335,7 +335,7 @@ export default function NuevaImportacion() {
 
         {preview.items.length > 0 && (
           <div className="mt-4 pt-4 border-t">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[560px] text-sm">
               <thead>
                 <tr className="text-left text-slate-500 border-b">
                   <th className="pb-2">Item</th>

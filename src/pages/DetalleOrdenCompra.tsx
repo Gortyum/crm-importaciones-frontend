@@ -71,8 +71,8 @@ export default function DetalleOrdenCompra() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <div className="bg-card p-5 col-span-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="bg-card p-5 md:col-span-2">
           <h2 className="font-semibold text-sm uppercase text-slate-500 mb-3">Proveedor</h2>
           <p className="font-medium">{oc.proveedor_nombre}</p>
         </div>
@@ -83,9 +83,9 @@ export default function DetalleOrdenCompra() {
         </div>
       </div>
 
-      <div className="bg-card p-5">
+      <div className="bg-card overflow-x-auto p-5">
         <h2 className="font-semibold text-sm uppercase text-slate-500 mb-4">Items</h2>
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[560px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 border-b">
               <th className="pb-2">Descripción</th>

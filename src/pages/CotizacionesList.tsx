@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, Ship, ArrowRight } from "lucide-react";
+import { Plus, Search, Ship, ArrowRight, GripVertical } from "lucide-react";
 import { api } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -20,10 +20,15 @@ interface Cotizacion {
   items?: ItemCotizacion[];
 }
 
+interface DragState {
+  id: number; x: number; y: number; dx: number; dy: number; w: number;
+}
+
 /** Orden del flujo: de la etapa inicial a la final. Las canceladas se agrupan aparte, debajo. */
 const COLUMNAS = ["Creada", "Enviada", "Cerrada", "En Produccion", "Entregada"];
 const TERMINALES = ["Entregada", "Cancelada"];
 const UMBRAL_ALERTA_DIAS = 7;
+const UMBRAL_ARRASTRE_PX = 3;
 
 const ACCENT: Record<string, string> = {
   Creada: "bg-slate-400",
@@ -53,10 +58,12 @@ function diasEnEstado(c: Cotizacion): number {
 export default function CotizacionesList() {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [busqueda, setBusqueda] = useState("");
-  const [dragId, setDragId] = useState<number | null>(null);
+  const [drag, setDrag] = useState<DragState | null>(null);
   const [sobre, setSobre] = useState<string | null>(null);
   const [modal, setModal] = useState<Cotizacion | null>(null);
-  const ptrInicio = useRef<{ x: number; y: number } | null>(null);
+  const arrastreRef = useRef<{
+    id: number; startX: number; startY: number; dx: number; dy: number; w: number; arrastrando: boolean;
+  } | null>(null);
 
   useEffect(() => { api.cotizaciones.list().then(setCotizaciones); }, []);
 
@@ -77,6 +84,7 @@ export default function CotizacionesList() {
   };
 
   const canceladas = porEstado("Cancelada");
+  const dragCard = drag ? cotizaciones.find((x) => x.id === drag.id) ?? null : null;
 
   const mover = async (c: Cotizacion, destino: string) => {
     const anterior = c;
@@ -90,7 +98,6 @@ export default function CotizacionesList() {
     };
     setCotizaciones((prev) => prev.map((p) => (p.id === c.id ? clon : p)));
     setSobre(null);
-    setDragId(null);
     try {
       const nuevo = await api.cotizaciones.changeEstado(c.id, destino);
       setCotizaciones((prev) => prev.map((p) => (p.id === c.id ? { ...p, ...nuevo } : p)));
@@ -100,31 +107,76 @@ export default function CotizacionesList() {
     }
   };
 
-  const alSoltar = (estado: string) => {
-    if (dragId == null) return;
-    const c = cotizaciones.find((x) => x.id === dragId);
+  const alSoltar = (estado: string, id: number) => {
+    const c = cotizaciones.find((x) => x.id === id);
     if (c && esDropValido(c.estado, estado)) mover(c, estado);
     setSobre(null);
   };
 
-  const abrirDetalle = (c: Cotizacion, e: MouseEvent) => {
-    const p = ptrInicio.current;
-    if (p && Math.hypot(e.clientX - p.x, e.clientY - p.y) > 5) return;
-    setModal(c);
+  const estadoEnPunto = (x: number, y: number): string | null => {
+    const el = document.elementFromPoint(x, y);
+    const col = el?.closest("[data-columna]") as HTMLElement | null;
+    return col?.dataset.columna ?? null;
   };
 
-  const Card = ({ c }: { c: Cotizacion }) => {
+  const iniciarArrastre = (e: ReactPointerEvent, c: Cotizacion) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if ((e.target as HTMLElement).closest("a,button")) return;
+    const el = e.currentTarget as HTMLElement;
+    const rect = el.getBoundingClientRect();
+    arrastreRef.current = {
+      id: c.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      dx: e.clientX - rect.left,
+      dy: e.clientY - rect.top,
+      w: rect.width,
+      arrastrando: false,
+    };
+    el.setPointerCapture(e.pointerId);
+  };
+
+  const moverArrastre = (e: ReactPointerEvent) => {
+    const a = arrastreRef.current;
+    if (!a) return;
+    if (!a.arrastrando) {
+      if (Math.hypot(e.clientX - a.startX, e.clientY - a.startY) < UMBRAL_ARRASTRE_PX) return;
+      a.arrastrando = true;
+    }
+    setDrag({ id: a.id, x: e.clientX, y: e.clientY, dx: a.dx, dy: a.dy, w: a.w });
+    setSobre(estadoEnPunto(e.clientX, e.clientY));
+  };
+
+  const soltarArrastre = (e: ReactPointerEvent) => {
+    const a = arrastreRef.current;
+    arrastreRef.current = null;
+    setDrag(null);
+    if (!a) return;
+    if (a.arrastrando) {
+      const destino = estadoEnPunto(e.clientX, e.clientY);
+      setSobre(null);
+      if (destino) alSoltar(destino, a.id);
+    } else {
+      const c = cotizaciones.find((x) => x.id === a.id);
+      if (c) setModal(c);
+      setSobre(null);
+    }
+  };
+
+  const cancelarArrastre = () => {
+    arrastreRef.current = null;
+    setDrag(null);
+    setSobre(null);
+  };
+
+  const Contenido = ({ c }: { c: Cotizacion }) => {
     const items = c.items ?? [];
     const dias = diasEnEstado(c);
     return (
-      <div
-        draggable={movible(c)}
-        onPointerDown={(e) => { ptrInicio.current = { x: e.clientX, y: e.clientY }; }}
-        onDragStart={(e) => { setDragId(c.id); e.dataTransfer.effectAllowed = "move"; }}
-        onDragEnd={() => { setDragId(null); setSobre(null); }}
-        onClick={(e) => abrirDetalle(c, e)}
-        className={`bg-white rounded-md shadow-sm border border-slate-200 p-3 hover:shadow-md hover:border-blue-300 transition-shadow ${movible(c) ? "cursor-grab active:cursor-grabbing" : ""} ${dragId === c.id ? "opacity-50" : ""}`}
-      >
+      <>
+        {movible(c) && (
+          <GripVertical size={14} className="pointer-events-none absolute right-2 top-2 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100" />
+        )}
         <p className="font-mono text-[0.65rem] text-slate-400 uppercase tracking-wide">{c.correlativo}</p>
         <p className="text-sm font-semibold text-slate-800 mt-0.5 line-clamp-1">{c.cliente?.razon_social || "—"}</p>
         {c.importacion_correlativo && c.importacion_id != null && (
@@ -157,22 +209,36 @@ export default function CotizacionesList() {
           )}
           <span className="font-semibold">{formatCLP(c.total_general)}</span>
         </div>
+      </>
+    );
+  };
+
+  const Card = ({ c }: { c: Cotizacion }) => {
+    const arrastrable = movible(c);
+    const arrastrando = drag?.id === c.id;
+    return (
+      <div
+        onPointerDown={arrastrable ? (e) => iniciarArrastre(e, c) : undefined}
+        onPointerMove={arrastrable ? moverArrastre : undefined}
+        onPointerUp={arrastrable ? soltarArrastre : undefined}
+        onPointerCancel={arrastrable ? cancelarArrastre : undefined}
+        onClick={arrastrable ? undefined : () => setModal(c)}
+        className={`group relative bg-white rounded-md shadow-sm border border-slate-200 p-3 transition-shadow hover:shadow-md hover:border-blue-300 ${
+          arrastrable ? "cursor-grab active:cursor-grabbing select-none touch-none" : "cursor-pointer"
+        } ${arrastrando ? "opacity-40" : ""}`}
+      >
+        <Contenido c={c} />
       </div>
     );
   };
 
   const Columna = ({ estado }: { estado: string }) => {
     const items = porEstado(estado);
-    const sobreEsto = sobre === estado && dragId != null;
-    const valido = sobreEsto && (() => {
-      const c = cotizaciones.find((x) => x.id === dragId);
-      return c ? esDropValido(c.estado, estado) : false;
-    })();
+    const sobreEsto = sobre === estado && dragCard != null;
+    const valido = sobreEsto && dragCard ? esDropValido(dragCard.estado, estado) : false;
     return (
       <div
-        onDragOver={(e) => { if (dragId != null) { e.preventDefault(); setSobre(estado); } }}
-        onDragLeave={() => setSobre((s) => (s === estado ? null : s))}
-        onDrop={() => alSoltar(estado)}
+        data-columna={estado}
         className={`w-72 shrink-0 bg-slate-100 rounded-md flex flex-col transition-shadow ${sobreEsto ? (valido ? "ring-2 ring-emerald-400 ring-offset-1" : "ring-2 ring-red-300 ring-offset-1") : ""}`}
       >
         <div className="px-3 py-2.5 flex items-center gap-2 border-b border-slate-200">
@@ -193,19 +259,19 @@ export default function CotizacionesList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Cotizaciones</h1>
           <p className="font-mono text-[0.7rem] uppercase tracking-[0.18em] text-slate-400 mt-1.5">{cotizaciones.length} registros</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-1 flex-wrap items-center justify-end gap-3 sm:flex-none">
+          <div className="relative w-full sm:w-auto">
             <Search size={15} className="absolute left-3 top-2.5 text-slate-400" />
             <Input
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               placeholder="Buscar cliente o correlativo"
-              className="pl-9 w-64"
+              className="pl-9 w-full sm:w-64"
             />
           </div>
           <Link to="/cotizaciones/nueva">
@@ -221,7 +287,7 @@ export default function CotizacionesList() {
         </div>
       ) : (
         <>
-          <div className="flex gap-4 overflow-x-auto pb-2 items-start">
+          <div className="flex min-h-[calc(100vh-14rem)] items-stretch gap-4 overflow-x-auto pb-2">
             {COLUMNAS.map((estado) => <Columna key={estado} estado={estado} />)}
           </div>
           {canceladas.length > 0 && (
@@ -239,6 +305,17 @@ export default function CotizacionesList() {
             </div>
           )}
         </>
+      )}
+
+      {drag && dragCard && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{ left: drag.x - drag.dx, top: drag.y - drag.dy, width: drag.w }}
+        >
+          <div className="group relative rotate-2 rounded-md border border-blue-300 bg-white p-3 shadow-xl">
+            <Contenido c={dragCard} />
+          </div>
+        </div>
       )}
 
       <Dialog

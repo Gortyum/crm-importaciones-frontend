@@ -37,8 +37,8 @@ export default function ImportacionesList() {
         <Button onClick={() => navigate("/importaciones/nueva")}><Plus size={16} className="mr-1" /> Nueva importación</Button>
       </div>
 
-      <div className="bg-card overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-card overflow-x-auto">
+        <table className="w-full min-w-[880px] text-sm">
           <thead>
             <tr className="text-left text-slate-500 border-b bg-slate-50">
               <th className="p-3">Correlativo</th>
