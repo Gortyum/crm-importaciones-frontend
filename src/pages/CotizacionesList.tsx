@@ -23,7 +23,6 @@ interface Cotizacion {
 interface DragState {
   id: number; x: number; y: number; dx: number; dy: number; w: number;
 }
-
 /** Orden del flujo: de la etapa inicial a la final. Las canceladas se agrupan aparte, debajo. */
 const COLUMNAS = ["Creada", "Enviada", "Cerrada", "En Produccion", "Entregada"];
 const TERMINALES = ["Entregada", "Cancelada"];
@@ -64,6 +63,14 @@ export default function CotizacionesList() {
   const arrastreRef = useRef<{
     id: number; startX: number; startY: number; dx: number; dy: number; w: number; arrastrando: boolean;
   } | null>(null);
+  const ghostRef = useRef<HTMLDivElement | null>(null);
+  const posRef = useRef({ x: 0, y: 0 });
+  const targetRef = useRef({ x: 0, y: 0, dx: 0, dy: 0 });
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => () => {
+    if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+  }, []);
 
   useEffect(() => { api.cotizaciones.list().then(setCotizaciones); }, []);
 
@@ -136,20 +143,48 @@ export default function CotizacionesList() {
     el.setPointerCapture(e.pointerId);
   };
 
+  const animar = () => {
+    const p = posRef.current;
+    const t = targetRef.current;
+    p.x += (t.x - p.x) * 0.3;
+    p.y += (t.y - p.y) * 0.3;
+    const g = ghostRef.current;
+    if (g) g.style.transform = `translate3d(${p.x - t.dx}px, ${p.y - t.dy}px, 0)`;
+    rafRef.current = requestAnimationFrame(animar);
+  };
+
+  const iniciarAnimacion = () => {
+    if (rafRef.current != null) return;
+    rafRef.current = requestAnimationFrame(animar);
+  };
+
+  const detenerAnimacion = () => {
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+  };
+
   const moverArrastre = (e: ReactPointerEvent) => {
     const a = arrastreRef.current;
     if (!a) return;
     if (!a.arrastrando) {
       if (Math.hypot(e.clientX - a.startX, e.clientY - a.startY) < UMBRAL_ARRASTRE_PX) return;
       a.arrastrando = true;
+      posRef.current = { x: e.clientX, y: e.clientY };
+      targetRef.current = { x: e.clientX, y: e.clientY, dx: a.dx, dy: a.dy };
+      setDrag({ id: a.id, x: e.clientX, y: e.clientY, dx: a.dx, dy: a.dy, w: a.w });
+      iniciarAnimacion();
     }
-    setDrag({ id: a.id, x: e.clientX, y: e.clientY, dx: a.dx, dy: a.dy, w: a.w });
+    targetRef.current.x = e.clientX;
+    targetRef.current.y = e.clientY;
     setSobre(estadoEnPunto(e.clientX, e.clientY));
   };
 
   const soltarArrastre = (e: ReactPointerEvent) => {
     const a = arrastreRef.current;
     arrastreRef.current = null;
+    detenerAnimacion();
     setDrag(null);
     if (!a) return;
     if (a.arrastrando) {
@@ -165,6 +200,7 @@ export default function CotizacionesList() {
 
   const cancelarArrastre = () => {
     arrastreRef.current = null;
+    detenerAnimacion();
     setDrag(null);
     setSobre(null);
   };
@@ -309,8 +345,12 @@ export default function CotizacionesList() {
 
       {drag && dragCard && (
         <div
-          className="pointer-events-none fixed z-50"
-          style={{ left: drag.x - drag.dx, top: drag.y - drag.dy, width: drag.w }}
+          ref={ghostRef}
+          className="pointer-events-none fixed left-0 top-0 z-50"
+          style={{
+            width: drag.w,
+            transform: `translate3d(${drag.x - drag.dx}px, ${drag.y - drag.dy}px, 0)`,
+          }}
         >
           <div className="group relative rotate-2 rounded-md border border-blue-300 bg-white p-3 shadow-xl">
             <Contenido c={dragCard} />
