@@ -29,6 +29,7 @@ export default function DetalleCotizacion() {
   const [imp, setImp] = useState<any>(null);
   const [proveedores, setProveedores] = useState<any[]>([]);
   const [productoFotos, setProductoFotos] = useState<Record<number, string>>({});
+  const [productoFotoArchivo, setProductoFotoArchivo] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [creandoOCId, setCreandoOCId] = useState<number | null>(null);
 
@@ -42,12 +43,15 @@ export default function DetalleCotizacion() {
       setCot(cotData);
       setProveedores(provs);
       const fotoPorProducto: Record<number, string> = {};
+      const archivoPorProducto: Record<number, number> = {};
       fotosProductos.forEach((f: any) => {
         if (f.url && f.entidad_id != null && !fotoPorProducto[f.entidad_id]) {
           fotoPorProducto[f.entidad_id] = f.url;
+          if (f.id != null) archivoPorProducto[f.entidad_id] = f.id;
         }
       });
       setProductoFotos(fotoPorProducto);
+      setProductoFotoArchivo(archivoPorProducto);
       if (cotData.importacion_id) {
         try {
           const impData = await api.importaciones.get(cotData.importacion_id);
@@ -79,11 +83,22 @@ export default function DetalleCotizacion() {
     if (!cot) return;
     try {
       const data = await api.cotizaciones.pdfData(cot.id);
-      data.items = (data.items || []).map((it: any, idx: number) => {
-        const orig = cot.items?.[idx];
-        const foto = orig?.producto_id ? productoFotos[orig.producto_id] : "";
-        return { ...it, imagen_url: it.imagen_url || foto || "" };
-      });
+      data.items = await Promise.all(
+        (data.items || []).map(async (it: any, idx: number) => {
+          const orig = cot.items?.[idx];
+          const archivoId = orig?.producto_id ? productoFotoArchivo[orig.producto_id] : undefined;
+          if (archivoId != null) {
+            try {
+              const dataUrl = await api.archivos.toDataURL(archivoId);
+              if (dataUrl) return { ...it, imagen_url: dataUrl };
+            } catch {
+              // cae al fallback con la url (fresca o guardada)
+            }
+          }
+          const foto = orig?.producto_id ? productoFotos[orig.producto_id] : "";
+          return { ...it, imagen_url: it.imagen_url || foto || "" };
+        })
+      );
       generarPDF(data);
       if (!cot.pdf_emitido) {
         setCot({ ...cot, pdf_emitido: true });
