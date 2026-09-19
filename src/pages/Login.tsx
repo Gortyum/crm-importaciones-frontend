@@ -2,7 +2,6 @@ import { FormEvent, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Lock, Rocket, User } from "lucide-react";
 import { useAuth } from "@/hooks/AuthContext";
-import { api } from "@/services/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
@@ -11,7 +10,6 @@ import { LeafMark } from "@/components/brand/LeafMark";
 export default function Login() {
   const { user, login, demoLogin } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,24 +22,13 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      if (mode === "login") {
-        await login(username.trim(), password);
-      } else {
-        const res = await api.auth.register(username.trim(), password);
-        await login(res.username, password);
-      }
+      await login(username.trim(), password);
       navigate("/", { replace: true });
     } catch (err: any) {
       setError(err.message || "Error de inicio de sesión");
     } finally {
       setLoading(false);
     }
-  };
-
-  const switchMode = () => {
-    setMode(mode === "login" ? "register" : "login");
-    setError("");
-    setPassword("");
   };
 
   const entrarDemo = async () => {
@@ -72,9 +59,7 @@ export default function Login() {
               </p>
             </div>
           </div>
-          <p className="text-sm text-slate-500 mt-1">
-            {mode === "login" ? "Inicia sesión para continuar" : "Crea una cuenta nueva"}
-          </p>
+          <p className="text-sm text-slate-500 mt-1">Inicia sesión para continuar</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
@@ -83,7 +68,7 @@ export default function Login() {
               <User size={16} className="absolute left-3 top-2.5 text-slate-400" />
               <Input
                 id="username"
-                autoComplete={mode === "login" ? "username" : "new-username"}
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="pl-9"
@@ -99,7 +84,7 @@ export default function Login() {
               <Input
                 id="password"
                 type="password"
-                autoComplete={mode === "login" ? "current-password" : "new-password"}
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-9"
@@ -110,33 +95,24 @@ export default function Login() {
           </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Procesando…" : mode === "login" ? "Ingresar" : "Registrarse"}
+            {loading ? "Procesando…" : "Ingresar"}
           </Button>
         </form>
-        <button
-          type="button"
-          onClick={switchMode}
-          className="mt-4 w-full text-center text-sm text-blue-600 hover:underline"
-        >
-          {mode === "login" ? "¿No tienes cuenta? Regístrate" : "Ya tengo cuenta, iniciar sesión"}
-        </button>
-        {mode === "login" && (
-          <div className="mt-5 pt-5 border-t border-slate-200">
-            <p className="text-xs text-slate-500 text-center mb-2">
-              ¿Solo quieres explorar?
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={entrarDemo}
-              disabled={loading}
-            >
-              <Rocket size={16} />
-              Probar demo
-            </Button>
-          </div>
-        )}
+        <div className="mt-5 pt-5 border-t border-slate-200">
+          <p className="text-xs text-slate-500 text-center mb-2">
+            ¿Solo quieres explorar?
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={entrarDemo}
+            disabled={loading}
+          >
+            <Rocket size={16} />
+            Probar demo
+          </Button>
+        </div>
       </div>
     </div>
   );
